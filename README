@@ -1,0 +1,120 @@
+NAME
+    SQL::Executor - Thin DBI wrapper using SQL::Maker
+
+SYNOPSIS
+      use DBI;
+      use SQL::Executor;
+      my $dbh = DBI->connect($dsn, $id, $pass);
+      my $ex = SQL::Executor->new($dbh);
+      my @rows = $ex->select('SOME_TABLE', { id => 123 });
+      $ex->insert('SOME_TABLE', { id => 124, value => 'xxxx'} );
+      $ex->update('SOME_TABLE', { value => 'yyyy'}, { id => 124 } );
+      $ex->delete('SOME_TABLE', { id => 124 } );
+
+DESCRIPTION
+    SQL::Executor is Thin DBI wrapper using SQL::Maker.
+
+METHODS
+  new($dbh)
+  select($table_name, $where, $option)
+    select row(s). parameter is the same as select method in SQL::Maker. But
+    array ref for filed names are not needed. In array context, this method
+    behaves the same as select_all. In scalar context, this method behaves
+    the same as select_one
+
+  select_row($table_name, $where, $option)
+    select only one row. parameter is the same as select method in
+    SQL::Maker. But array ref for filed names are not needed.
+
+  select_all($table_name, $where, $option)
+    select all rows. parameter is the same as select method in SQL::Maker.
+    But array ref for filed names are not needed.
+
+  select_named($sql, $params_href)
+    select row(s). In array context, this method behaves the same as
+    select_all_with_fields. In scalar context, this method behaves the same
+    as select_one_with_fileds
+
+    You can use named placeholder in SQL like this,
+
+      my $ex = SQL::Executor->new($dbh);
+      my $row = $ex->select_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
+
+  select_row_named($sql, $params_href)
+    select only one row. You can use named placeholder in SQL like this,
+
+      my $ex = SQL::Executor->new($dbh);
+      my $row = $ex->select_row_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
+
+  select_all_named($sql, $params_href)
+    select all rows. You can use named placeholder in SQL like this,
+
+      my $ex = SQL::Executor->new($dbh);
+      my @rows = $ex->select_all_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
+
+  select_by_sql($sql, @binds)
+    select row(s). In array context, this method behaves the same as
+    select_all_with_fields. In scalar context, this method behaves the same
+    as select_one_with_fileds
+
+      my $ex = SQL::Executor->new($dbh);
+      my $row = $ex->select_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+
+  select_row_by_sql($sql, @binds)
+    select only one row.
+
+      my $ex = SQL::Executor->new($dbh);
+      my $row = $ex->select_row_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+
+  select_all_by_sql($sql, @binds)
+    select all rows.
+
+      my $ex = SQL::Executor->new($dbh);
+      my @rows = $ex->select_all_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+
+  select_with_fields($table_name, $fields_aref, $where, $option)
+    select row(s). parameter is the same as select method in SQL::Maker. In
+    array context, this method behaves the same as select_all_with_fields.
+    In scalar context, this method behaves the same as
+    select_one_with_fileds
+
+  select_row_with_fields($table_name, $fields_aref, $where, $option)
+    select only one row. parameter is the same as select method in
+    SQL::Maker.
+
+  select_all_with_fields($table_name, $fields_aref, $where, $option)
+    select all rows. parameter is the same as select method in SQL::Maker.
+    But array ref for filed names are not needed.
+
+  insert($table_name, $values)
+    Do INSERT statement. parameter is the same as select method in
+    SQL::Maker.
+
+  insert_multi($table_name, @args)
+    Do INSERT-multi statement using SQL::Maker::Plugin::InsertMulti.
+
+  delete($table_name, $where)
+    Do DELETE statement. parameter is the same as select method in
+    SQL::Maker.
+
+  update($table_name, $set, $where)
+    Do UPDATE statement. parameter is the same as select method in
+    SQL::Maker.
+
+  execute_query($sql, @binds)
+    execute DML query
+
+AUTHOR
+    Takuya Tsuchida <tsucchi {at} cpan.org>
+
+SEE ALSO
+    DBI, SQL::Maker, DBIx::Simple
+
+    Codes for named placeholder is taken from Teng's search_named.
+
+LICENSE
+    Copyright (C) Takuya Tsuchida
+
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
