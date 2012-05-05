@@ -319,7 +319,6 @@ execute DML query
 
 sub execute_query {
     my ($self, $sql, @binds) = @_;
-    my $builder = $self->builder;
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
     $sth->execute(@binds);
