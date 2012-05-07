@@ -246,7 +246,7 @@ select only one row. parameter is the same as select method in L<SQL::Maker>.
 
 sub select_row_with_fields {
     my ($self, $table_name, $fields_aref, $where, $option) = @_;
-    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && !defined $where );
+    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
     return $self->select_row_by_sql($sql, @binds);
@@ -260,7 +260,7 @@ select all rows. parameter is the same as select method in L<SQL::Maker>. But ar
 
 sub select_all_with_fields {
     my ($self, $table_name, $fields_aref, $where, $option) = @_;
-    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && !defined $where );
+    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
     return $self->select_all_by_sql($sql, @binds);
@@ -302,7 +302,7 @@ Do DELETE statement. parameter is the same as select method in L<SQL::Maker>.
 
 sub delete {
     my ($self, $table_name, $where) = @_;
-    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && !defined $where );
+    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->delete($table_name, $where);
     $self->_execute_and_finish($sql, @binds);
@@ -317,7 +317,7 @@ Do UPDATE statement. parameter is the same as select method in L<SQL::Maker>.
 
 sub update {
     my ($self, $table_name, $set, $where) = @_;
-    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && !defined $where );
+    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->update($table_name, $set, $where);
     $self->_execute_and_finish($sql, @binds);
@@ -344,6 +344,12 @@ sub _execute_and_finish {
     $sth->finish;
 }
 
+sub _is_empty_where {
+    my ($self, $where) = @_;
+    return !defined $where 
+           || ( ref $where eq 'ARRAY' && !@{ $where } )
+           || ( ref $where eq 'HASH'  && !%{ $where } );
+}
 
 1;
 __END__
