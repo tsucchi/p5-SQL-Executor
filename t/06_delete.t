@@ -16,6 +16,16 @@ subtest 'delete', sub {
     ok( !defined $row );
 };
 
+subtest 'delete allow empty condition', sub {
+    my $ex = SQL::Executor->new($dbh, { allow_empty_condition => 0 } );
+    eval {
+        $ex->delete('TEST');
+        fail('expected exception');
+    };
+    like($@, qr/^condition is empty/);
+};
+
+
 done_testing;
 
 

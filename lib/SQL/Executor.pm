@@ -302,6 +302,7 @@ Do DELETE statement. parameter is the same as select method in L<SQL::Maker>.
 
 sub delete {
     my ($self, $table_name, $where) = @_;
+    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && !defined $where );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->delete($table_name, $where);
     $self->_execute_and_finish($sql, @binds);
