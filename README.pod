@@ -25,7 +25,14 @@ SQL::Executor is Thin DBI wrapper using SQL::Maker.
 
 =cut
 
-=head2 new($dbh)
+=head2 new($dbh, $option_href)
+
+$dbh: Database Handler
+$option_href: option
+
+available option is as follows
+
+allow_empty_condition (BOOL default 1): allow empty condition(where) in select/delete/update
 
 
 =cut

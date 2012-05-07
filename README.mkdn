@@ -19,7 +19,14 @@ SQL::Executor is Thin DBI wrapper using SQL::Maker.
 
 # METHODS
 
-## new($dbh)
+## new($dbh, $option\_href)
+
+$dbh: Database Handler
+$option\_href: option
+
+available option is as follows
+
+allow\_empty\_condition (BOOL default 1): allow empty condition(where) in select/delete/update
 
 ## select($table\_name, $where, $option)
 
