@@ -36,6 +36,34 @@ subtest 'select', sub {
     rows_ok(@rows);
 };
 
+subtest 'select_row allow_empty_condition', sub {
+    my $ex = SQL::Executor->new($dbh, { allow_empty_condition => 0 });
+    eval {
+        my $row = $ex->select_row($table_name);
+        fail("exception expected");
+    };
+    like( $@, qr/^condition is empty/);
+};
+
+subtest 'select_all allow_empty_condition', sub {
+    my $ex = SQL::Executor->new($dbh, { allow_empty_condition => 0 });
+    eval {
+        my @rows = $ex->select_all($table_name);
+        fail("exception expected");
+    };
+    like( $@, qr/^condition is empty/);
+};
+
+subtest 'select allow_empty_condition', sub {
+    my $ex = SQL::Executor->new($dbh, { allow_empty_condition => 0 });
+    eval {
+        my @rows = $ex->select($table_name);
+        fail("exception expected");
+    };
+    like( $@, qr/^condition is empty/);
+};
+
+
 done_testing;
 
 sub single_row_ok {

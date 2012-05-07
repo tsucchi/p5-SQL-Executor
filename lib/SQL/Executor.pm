@@ -4,10 +4,10 @@ use warnings;
 our $VERSION = '0.01';
 
 use Class::Accessor::Lite (
-    ro => ['builder', 'dbh'],
+    ro => ['builder', 'dbh', 'allow_empty_condition'],
 );
 use SQL::Maker;
-use Carp;
+use Carp qw();
 
 =head1 NAME
 
@@ -34,17 +34,26 @@ SQL::Executor is Thin DBI wrapper using SQL::Maker.
 
 =cut
 
-=head2 new($dbh)
+=head2 new($dbh, $option_href)
+
+$dbh: Database Handler
+$option_href: option
+
+available option is as follows
+
+allow_empty_condition (BOOL default 1): allow empty condition(where) in select/delete/update
 
 =cut
 
 sub new {
-    my ($class, $dbh) = @_;
+    my ($class, $dbh, $option_href) = @_;
     my $builder = SQL::Maker->new( driver => $dbh->{Driver}->{Name} );
     SQL::Maker->load_plugin('InsertMulti');
+
     my $self = {
-        builder => $builder,
-        dbh     => $dbh,
+        builder               => $builder,
+        dbh                   => $dbh,
+        allow_empty_condition => defined $option_href->{allow_empty_condition} ? $option_href->{allow_empty_condition} : 1,
     };
     bless $self, $class;
 }
@@ -237,6 +246,7 @@ select only one row. parameter is the same as select method in L<SQL::Maker>.
 
 sub select_row_with_fields {
     my ($self, $table_name, $fields_aref, $where, $option) = @_;
+    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && !defined $where );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
     return $self->select_row_by_sql($sql, @binds);
@@ -250,6 +260,7 @@ select all rows. parameter is the same as select method in L<SQL::Maker>. But ar
 
 sub select_all_with_fields {
     my ($self, $table_name, $fields_aref, $where, $option) = @_;
+    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && !defined $where );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
     return $self->select_all_by_sql($sql, @binds);
