@@ -17,6 +17,15 @@ subtest 'update', sub {
     is( $row->{value}, 'xxxx');
 };
 
+subtest 'update allow empty condition', sub {
+    my $ex = SQL::Executor->new($dbh, { allow_empty_condition => 0 });
+    eval {
+        $ex->update('TEST', { value => 'xxxx'});
+        fail('expected exception');
+    };
+    like($@, qr/^condition is empty/);
+};
+
 done_testing;
 
 

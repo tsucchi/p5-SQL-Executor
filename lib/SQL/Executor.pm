@@ -317,6 +317,7 @@ Do UPDATE statement. parameter is the same as select method in L<SQL::Maker>.
 
 sub update {
     my ($self, $table_name, $set, $where) = @_;
+    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && !defined $where );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->update($table_name, $set, $where);
     $self->_execute_and_finish($sql, @binds);
