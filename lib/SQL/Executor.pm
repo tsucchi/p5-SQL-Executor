@@ -348,7 +348,9 @@ sub _is_empty_where {
     my ($self, $where) = @_;
     return !defined $where 
            || ( ref $where eq 'ARRAY' && !@{ $where } )
-           || ( ref $where eq 'HASH'  && !%{ $where } );
+           || ( ref $where eq 'HASH'  && !%{ $where } )
+           || ( ref $where->can('as_sql') && $where->as_sql eq '' ) #SQL::Maker::Condition
+    ;
 }
 
 1;
