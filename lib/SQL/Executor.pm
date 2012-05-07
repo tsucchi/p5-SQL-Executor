@@ -78,6 +78,7 @@ sub select {
 =head2 select_row($table_name, $where, $option)
 
 select only one row. parameter is the same as select method in L<SQL::Maker>. But array ref for filed names are not needed.
+this method returns hash ref and it is the same as return value in DBI's selectrow_hashref/fetchrow_hashref.
 
 =cut
 
@@ -89,6 +90,7 @@ sub select_row {
 =head2 select_all($table_name, $where, $option)
 
 select all rows. parameter is the same as select method in L<SQL::Maker>. But array ref for filed names are not needed.
+this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow_hashref/fetchrow_hashref).
 
 =cut
 
@@ -125,6 +127,8 @@ select only one row. You can use named placeholder in SQL like this,
   my $ex = SQL::Executor->new($dbh);
   my $row = $ex->select_row_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
 
+this method returns hash ref and it is the same as return value in DBI's selectrow_hashref/fetchrow_hashref.
+
 =cut
 
 sub select_row_named {
@@ -139,6 +143,8 @@ select all rows. You can use named placeholder in SQL like this,
 
   my $ex = SQL::Executor->new($dbh);
   my @rows = $ex->select_all_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
+
+this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow_hashref/fetchrow_hashref).
 
 =cut
 
@@ -196,6 +202,8 @@ select only one row.
   my $ex = SQL::Executor->new($dbh);
   my $row = $ex->select_row_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
 
+this method returns hash ref and it is the same as return value in DBI's selectrow_hashref/fetchrow_hashref.
+
 =cut
 
 sub select_row_by_sql {
@@ -211,6 +219,8 @@ select all rows.
 
   my $ex = SQL::Executor->new($dbh);
   my @rows = $ex->select_all_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+
+this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow_hashref/fetchrow_hashref).
 
 =cut
 
@@ -241,6 +251,7 @@ sub select_with_fields {
 =head2 select_row_with_fields($table_name, $fields_aref, $where, $option)
 
 select only one row. parameter is the same as select method in L<SQL::Maker>.
+this method returns hash ref and it is the same as return value in DBI's selectrow_hashref/fetchrow_hashref.
 
 =cut
 
@@ -255,6 +266,7 @@ sub select_row_with_fields {
 =head2 select_all_with_fields($table_name, $fields_aref, $where, $option)
 
 select all rows. parameter is the same as select method in L<SQL::Maker>. But array ref for filed names are not needed.
+this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow_hashref/fetchrow_hashref).
 
 =cut
 
@@ -326,7 +338,7 @@ sub update {
 
 =head2 execute_query($sql, @binds)
 
-execute DML query
+execute query and returns statement handler($sth).
 
 =cut
 
