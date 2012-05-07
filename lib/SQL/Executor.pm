@@ -26,7 +26,7 @@ SQL::Executor - Thin DBI wrapper using SQL::Maker
 
 =head1 DESCRIPTION
 
-SQL::Executor is Thin DBI wrapper using SQL::Maker.
+SQL::Executor is Thin DBI wrapper using SQL::Maker. This module provides interfaces to make easier access to SQL.
 
 =cut
 
