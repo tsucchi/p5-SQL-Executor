@@ -266,7 +266,7 @@ sub insert {
     my ($self, $table_name, $values) = @_;
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->insert($table_name, $values);
-    $self->execute_query($sql, @binds);
+    $self->_execute_and_finish($sql, @binds);
 }
 
 =head2 insert_multi($table_name, @args)
@@ -279,7 +279,7 @@ sub insert_multi {
     my ($self, $table_name, @args) = @_;
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->insert_multi($table_name, @args);
-    $self->execute_query($sql, @binds);
+    $self->_execute_and_finish($sql, @binds);
 }
 
 
@@ -293,7 +293,7 @@ sub delete {
     my ($self, $table_name, $where) = @_;
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->delete($table_name, $where);
-    $self->execute_query($sql, @binds);
+    $self->_execute_and_finish($sql, @binds);
 }
 
 
@@ -307,7 +307,7 @@ sub update {
     my ($self, $table_name, $set, $where) = @_;
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->update($table_name, $set, $where);
-    $self->execute_query($sql, @binds);
+    $self->_execute_and_finish($sql, @binds);
 }
 
 
@@ -322,8 +322,14 @@ sub execute_query {
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
     $sth->execute(@binds);
+    return $sth;
 }
 
+sub _execute_and_finish {
+    my ($self, $sql, @binds) = @_;
+    my $sth = $self->execute_query($sql, @binds);
+    $sth->finish;
+}
 
 
 1;
