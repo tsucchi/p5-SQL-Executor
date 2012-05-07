@@ -36,10 +36,12 @@ In array context, this method behaves the same as select\_all. In scalar context
 ## select\_row($table\_name, $where, $option)
 
 select only one row. parameter is the same as select method in [SQL::Maker](http://search.cpan.org/perldoc?SQL::Maker). But array ref for filed names are not needed.
+this method returns hash ref and it is the same as return value in DBI's selectrow\_hashref/fetchrow\_hashref.
 
 ## select\_all($table\_name, $where, $option)
 
 select all rows. parameter is the same as select method in [SQL::Maker](http://search.cpan.org/perldoc?SQL::Maker). But array ref for filed names are not needed.
+this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow\_hashref/fetchrow\_hashref).
 
 ## select\_named($sql, $params\_href)
 
@@ -58,12 +60,16 @@ select only one row. You can use named placeholder in SQL like this,
     my $ex = SQL::Executor->new($dbh);
     my $row = $ex->select_row_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
 
+this method returns hash ref and it is the same as return value in DBI's selectrow\_hashref/fetchrow\_hashref.
+
 ## select\_all\_named($sql, $params\_href)
 
 select all rows. You can use named placeholder in SQL like this,
 
     my $ex = SQL::Executor->new($dbh);
     my @rows = $ex->select_all_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
+
+this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow\_hashref/fetchrow\_hashref).
 
 ## select\_by\_sql($sql, @binds)
 
@@ -80,12 +86,16 @@ select only one row.
     my $ex = SQL::Executor->new($dbh);
     my $row = $ex->select_row_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
 
+this method returns hash ref and it is the same as return value in DBI's selectrow\_hashref/fetchrow\_hashref.
+
 ## select\_all\_by\_sql($sql, @binds)
 
 select all rows.
 
     my $ex = SQL::Executor->new($dbh);
     my @rows = $ex->select_all_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+
+this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow\_hashref/fetchrow\_hashref).
 
 ## select\_with\_fields($table\_name, $fields\_aref, $where, $option)
 
@@ -96,10 +106,12 @@ In scalar context, this method behaves the same as select\_one\_with\_fileds
 ## select\_row\_with\_fields($table\_name, $fields\_aref, $where, $option)
 
 select only one row. parameter is the same as select method in [SQL::Maker](http://search.cpan.org/perldoc?SQL::Maker).
+this method returns hash ref and it is the same as return value in DBI's selectrow\_hashref/fetchrow\_hashref.
 
 ## select\_all\_with\_fields($table\_name, $fields\_aref, $where, $option)
 
 select all rows. parameter is the same as select method in [SQL::Maker](http://search.cpan.org/perldoc?SQL::Maker). But array ref for filed names are not needed.
+this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow\_hashref/fetchrow\_hashref).
 
 ## insert($table\_name, $values)
 
@@ -119,7 +131,7 @@ Do UPDATE statement. parameter is the same as select method in [SQL::Maker](http
 
 ## execute\_query($sql, @binds)
 
-execute DML query
+execute query and returns statement handler($sth).
 
 # AUTHOR
 
