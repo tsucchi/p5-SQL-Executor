@@ -26,7 +26,11 @@ SQL::Executor - Thin DBI wrapper using SQL::Maker
 
 =head1 DESCRIPTION
 
-SQL::Executor is Thin DBI wrapper using SQL::Maker. This module provides interfaces to make easier access to SQL.
+SQL::Executor is thin DBI wrapper using L<SQL::Maker>. This module provides interfaces to make easier access to SQL.
+
+You can execute SQL via SQL::Maker-like interface in select(), select_row(), select_all(), select_with_fields(), select_row_with_fields(), select_all_with_fields(), insert(), insert_multi(), update() and delete().
+
+If you want to use more complex select query, you can use select_named(), select_row_named() or select_all_named() these execute SQL with named placeholder. If you don't want to use named placeholder, you can use select_by_sql(), select_row_by_sql() or select_all_by_sql() these execute SQL with normal placeholder('?').
 
 =cut
 
