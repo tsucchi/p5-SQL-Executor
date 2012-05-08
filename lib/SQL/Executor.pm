@@ -361,7 +361,7 @@ sub _is_empty_where {
     return !defined $where 
            || ( ref $where eq 'ARRAY' && !@{ $where } )
            || ( ref $where eq 'HASH'  && !%{ $where } )
-           || ( ref $where->can('as_sql') && $where->as_sql eq '' ) #SQL::Maker::Condition
+           || ( eval{ $where->can('as_sql') } && $where->as_sql eq '' ) #SQL::Maker::Condition
     ;
 }
 
