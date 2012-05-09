@@ -231,7 +231,7 @@ this method returns array that is composed of hash refs. (hash ref is same as DB
 sub select_all_by_sql {
     my ($self, $sql, @binds) = @_;
     my $dbh = $self->dbh;
-    my @rows = @{ $dbh->selectall_arrayref($sql, { Slice => {} }, @binds) || [] };
+    my @rows = @{ $dbh->selectall_arrayref($sql, { Slice => {} }, @binds) };
     return @rows;
 }
 
