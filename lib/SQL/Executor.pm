@@ -138,7 +138,7 @@ this method returns hash ref and it is the same as return value in DBI's selectr
 sub select_row_named {
     my ($self, $sql, $params_href) = @_;
     my @binds = $self->_named_bind($sql, $params_href);
-    return $self->select_row_by_sql($sql, @binds);
+    return $self->select_row_by_sql($sql, \@binds);
 }
 
 =head2 select_all_named($sql, $params_href)
@@ -155,7 +155,7 @@ this method returns array that is composed of hash refs. (hash ref is same as DB
 sub select_all_named {
     my ($self, $sql, $params_href) = @_;
     my @binds = $self->_named_bind($sql, $params_href);
-    return $self->select_all_by_sql($sql, @binds);
+    return $self->select_all_by_sql($sql, \@binds);
 }
 
 
@@ -181,57 +181,57 @@ sub _named_bind {
 }
 
 
-=head2 select_by_sql($sql, @binds)
+=head2 select_by_sql($sql, \@binds)
 
 select row(s). In array context, this method behaves the same as select_all_with_fields.
 In scalar context, this method behaves the same as select_one_with_fileds
 
   my $ex = SQL::Executor->new($dbh);
-  my $row = $ex->select_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+  my $row = $ex->select_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
 =cut
 
 sub select_by_sql {
-    my ($self, $sql, @binds) = @_;
+    my ($self, $sql, $binds_aref) = @_;
     if( wantarray() ) {
-        return $self->select_all_by_sql($sql, @binds);
+        return $self->select_all_by_sql($sql, $binds_aref);
     }
-    return $self->select_row_by_sql($sql, @binds);
+    return $self->select_row_by_sql($sql, $binds_aref);
 }
 
-=head2 select_row_by_sql($sql, @binds)
+=head2 select_row_by_sql($sql, \@binds)
 
 select only one row.
 
   my $ex = SQL::Executor->new($dbh);
-  my $row = $ex->select_row_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+  my $row = $ex->select_row_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
 this method returns hash ref and it is the same as return value in DBI's selectrow_hashref/fetchrow_hashref.
 
 =cut
 
 sub select_row_by_sql {
-    my ($self, $sql, @binds) = @_;
+    my ($self, $sql, $binds_aref) = @_;
     my $dbh = $self->dbh;
-    my $row = $dbh->selectrow_hashref($sql, undef, @binds);
+    my $row = $dbh->selectrow_hashref($sql, undef, @{ $binds_aref || [] } );
     return $row;
 }
 
-=head2 select_all_by_sql($sql, @binds)
+=head2 select_all_by_sql($sql, \@binds)
 
 select all rows.
 
   my $ex = SQL::Executor->new($dbh);
-  my @rows = $ex->select_all_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+  my @rows = $ex->select_all_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
 this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow_hashref/fetchrow_hashref).
 
 =cut
 
 sub select_all_by_sql {
-    my ($self, $sql, @binds) = @_;
+    my ($self, $sql, $binds_aref) = @_;
     my $dbh = $self->dbh;
-    my @rows = @{ $dbh->selectall_arrayref($sql, { Slice => {} }, @binds) };
+    my @rows = @{ $dbh->selectall_arrayref($sql, { Slice => {} }, @{ $binds_aref || [] }) };
     return @rows;
 }
 
@@ -264,7 +264,7 @@ sub select_row_with_fields {
     Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
-    return $self->select_row_by_sql($sql, @binds);
+    return $self->select_row_by_sql($sql, \@binds);
 }
 
 =head2 select_all_with_fields($table_name, $fields_aref, $where, $option)
@@ -279,7 +279,7 @@ sub select_all_with_fields {
     Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
-    return $self->select_all_by_sql($sql, @binds);
+    return $self->select_all_by_sql($sql, \@binds);
 }
 
 
@@ -293,7 +293,7 @@ sub insert {
     my ($self, $table_name, $values) = @_;
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->insert($table_name, $values);
-    $self->_execute_and_finish($sql, @binds);
+    $self->_execute_and_finish($sql, \@binds);
 }
 
 =head2 insert_multi($table_name, @args)
@@ -306,7 +306,7 @@ sub insert_multi {
     my ($self, $table_name, @args) = @_;
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->insert_multi($table_name, @args);
-    $self->_execute_and_finish($sql, @binds);
+    $self->_execute_and_finish($sql, \@binds);
 }
 
 
@@ -321,7 +321,7 @@ sub delete {
     Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->delete($table_name, $where);
-    $self->_execute_and_finish($sql, @binds);
+    $self->_execute_and_finish($sql, \@binds);
 }
 
 
@@ -336,27 +336,27 @@ sub update {
     Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->update($table_name, $set, $where);
-    $self->_execute_and_finish($sql, @binds);
+    $self->_execute_and_finish($sql, \@binds);
 }
 
 
-=head2 execute_query($sql, @binds)
+=head2 execute_query($sql, \@binds)
 
 execute query and returns statement handler($sth).
 
 =cut
 
 sub execute_query {
-    my ($self, $sql, @binds) = @_;
+    my ($self, $sql, $binds_aref) = @_;
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
-    $sth->execute(@binds);
+    $sth->execute(@{ $binds_aref || [] });
     return $sth;
 }
 
 sub _execute_and_finish {
-    my ($self, $sql, @binds) = @_;
-    my $sth = $self->execute_query($sql, @binds);
+    my ($self, $sql, $binds_aref) = @_;
+    my $sth = $self->execute_query($sql, $binds_aref);
     $sth->finish;
 }
 

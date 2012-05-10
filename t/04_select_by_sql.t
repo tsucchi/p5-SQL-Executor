@@ -14,23 +14,23 @@ my @binds = ('aaa');
 
 subtest 'select_row_by_sql', sub {
     my $ex = SQL::Executor->new($dbh);
-    my $row = $ex->select_row_by_sql($sql, @binds);
+    my $row = $ex->select_row_by_sql($sql, \@binds);
     single_row_ok($row);
 };
 
 
 subtest 'select_all_by_sql', sub {
     my $ex = SQL::Executor->new($dbh);
-    my @rows = $ex->select_all_by_sql($sql, @binds);
+    my @rows = $ex->select_all_by_sql($sql, \@binds);
     rows_ok(@rows);
 };
 
 subtest 'select_by_sql', sub {
     my $ex = SQL::Executor->new($dbh);
-    my $row = $ex->select_by_sql($sql, @binds);
+    my $row = $ex->select_by_sql($sql, \@binds);
     single_row_ok($row);
 
-    my @rows = $ex->select_by_sql($sql, @binds);
+    my @rows = $ex->select_by_sql($sql, \@binds);
     rows_ok(@rows);
 };
 
