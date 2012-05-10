@@ -102,35 +102,35 @@ this method returns array that is composed of hash refs. (hash ref is same as DB
 
 =cut
 
-=head2 select_by_sql($sql, @binds)
+=head2 select_by_sql($sql, \@binds)
 
 select row(s). In array context, this method behaves the same as select_all_with_fields.
 In scalar context, this method behaves the same as select_one_with_fileds
 
   my $ex = SQL::Executor->new($dbh);
-  my $row = $ex->select_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+  my $row = $ex->select_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
 
 =cut
 
-=head2 select_row_by_sql($sql, @binds)
+=head2 select_row_by_sql($sql, \@binds)
 
 select only one row.
 
   my $ex = SQL::Executor->new($dbh);
-  my $row = $ex->select_row_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+  my $row = $ex->select_row_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
 this method returns hash ref and it is the same as return value in DBI's selectrow_hashref/fetchrow_hashref.
 
 
 =cut
 
-=head2 select_all_by_sql($sql, @binds)
+=head2 select_all_by_sql($sql, \@binds)
 
 select all rows.
 
   my $ex = SQL::Executor->new($dbh);
-  my @rows = $ex->select_all_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+  my @rows = $ex->select_all_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
 this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow_hashref/fetchrow_hashref).
 
@@ -190,7 +190,7 @@ Do UPDATE statement. parameter is the same as select method in L<SQL::Maker>.
 
 =cut
 
-=head2 execute_query($sql, @binds)
+=head2 execute_query($sql, \@binds)
 
 execute query and returns statement handler($sth).
 

@@ -75,29 +75,29 @@ select all rows. You can use named placeholder in SQL like this,
 
 this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow\_hashref/fetchrow\_hashref).
 
-## select\_by\_sql($sql, @binds)
+## select\_by\_sql($sql, \\@binds)
 
 select row(s). In array context, this method behaves the same as select\_all\_with\_fields.
 In scalar context, this method behaves the same as select\_one\_with\_fileds
 
     my $ex = SQL::Executor->new($dbh);
-    my $row = $ex->select_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+    my $row = $ex->select_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
-## select\_row\_by\_sql($sql, @binds)
+## select\_row\_by\_sql($sql, \\@binds)
 
 select only one row.
 
     my $ex = SQL::Executor->new($dbh);
-    my $row = $ex->select_row_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+    my $row = $ex->select_row_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
 this method returns hash ref and it is the same as return value in DBI's selectrow\_hashref/fetchrow\_hashref.
 
-## select\_all\_by\_sql($sql, @binds)
+## select\_all\_by\_sql($sql, \\@binds)
 
 select all rows.
 
     my $ex = SQL::Executor->new($dbh);
-    my @rows = $ex->select_all_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", 1234);
+    my @rows = $ex->select_all_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
 this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow\_hashref/fetchrow\_hashref).
 
@@ -133,7 +133,7 @@ Do DELETE statement. parameter is the same as select method in [SQL::Maker](http
 
 Do UPDATE statement. parameter is the same as select method in [SQL::Maker](http://search.cpan.org/perldoc?SQL::Maker).
 
-## execute\_query($sql, @binds)
+## execute\_query($sql, \\@binds)
 
 execute query and returns statement handler($sth).
 
