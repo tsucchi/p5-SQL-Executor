@@ -112,7 +112,8 @@ this method returns array that is composed of hash refs. (hash ref is same as DB
 returns sql which is executable in execute_query() and parameters for bind.
 
   my ($sql, @binds) = named_bind("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 123 });
-  # $sql =>  "SELECT * FROM SOME_TABLE WHERE id = ?", @binds => (123)
+  # $sql   =>  "SELECT * FROM SOME_TABLE WHERE id = ?"
+  # @binds => (123)
 
 
 =cut

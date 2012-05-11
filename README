@@ -91,7 +91,8 @@ METHODS
     bind.
 
       my ($sql, @binds) = named_bind("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 123 });
-      # $sql =>  "SELECT * FROM SOME_TABLE WHERE id = ?", @binds => (123)
+      # $sql   =>  "SELECT * FROM SOME_TABLE WHERE id = ?"
+      # @binds => (123)
 
   select_by_sql($sql, \@binds)
     select row(s). In array context, this method behaves the same as
