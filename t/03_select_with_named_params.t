@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use SQL::Executor;
+use SQL::Executor qw(named_bind);
 use DBI;
 use Test::More;
 use t::Util;
@@ -12,6 +12,12 @@ prepare_testdata($dbh);
 
 my $sql = "SELECT * FROM TEST WHERE value = :value ORDER BY id";
 my $condition = { value => 'aaa' };
+
+subtest 'named_bind', sub {
+    my ($new_sql, @binds) = named_bind($sql, $condition);
+    is( $new_sql, "SELECT * FROM TEST WHERE value = ? ORDER BY id" );
+    is_deeply(\@binds, ['aaa']);
+};
 
 subtest 'select_row_named', sub {
     my $ex = SQL::Executor->new($dbh);
