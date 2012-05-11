@@ -86,6 +86,13 @@ METHODS
     this method returns array that is composed of hash refs. (hash ref is
     same as DBI's selectrow_hashref/fetchrow_hashref).
 
+  named_bind($sql, $params_href)
+    returns sql which is executable in execute_query() and parameters for
+    bind.
+
+      my ($sql, @binds) = named_bind("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 123 });
+      # $sql =>  "SELECT * FROM SOME_TABLE WHERE id = ?", @binds => (123)
+
   select_by_sql($sql, \@binds)
     select row(s). In array context, this method behaves the same as
     select_all_with_fields. In scalar context, this method behaves the same

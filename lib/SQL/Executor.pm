@@ -142,8 +142,8 @@ this method returns hash ref and it is the same as return value in DBI's selectr
 
 sub select_row_named {
     my ($self, $sql, $params_href) = @_;
-    my @binds = $self->_named_bind($sql, $params_href);
-    return $self->select_row_by_sql($sql, \@binds);
+    my ($new_sql, @binds) = named_bind($sql, $params_href);
+    return $self->select_row_by_sql($new_sql, \@binds);
 }
 
 =head2 select_all_named($sql, $params_href)
@@ -159,19 +159,29 @@ this method returns array that is composed of hash refs. (hash ref is same as DB
 
 sub select_all_named {
     my ($self, $sql, $params_href) = @_;
-    my @binds = $self->_named_bind($sql, $params_href);
-    return $self->select_all_by_sql($sql, \@binds);
+    my ($new_sql, @binds) = named_bind($sql, $params_href);
+    return $self->select_all_by_sql($new_sql, \@binds);
 }
 
 
-# modify sql in parameter and returns parameters for bind.
+=head2 named_bind($sql, $params_href)
+
+returns sql which is executable in execute_query() and parameters for bind.
+
+  my ($sql, @binds) = named_bind("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 123 });
+  # $sql   =>  "SELECT * FROM SOME_TABLE WHERE id = ?"
+  # @binds => (123)
+
+=cut
+
 # this code is taken from Teng's search_named()
-sub _named_bind {
-    my ($self, $sql, $params_href) = @_;
+sub named_bind {
+    my ($sql, $params_href) = @_;
 
     my %named_bind = %{ $params_href };
     my @binds;
-    $sql =~ s{:([A-Za-z_][A-Za-z0-9_]*)}{
+    my $new_sql = $sql;
+    $new_sql =~ s{:([A-Za-z_][A-Za-z0-9_]*)}{
         Carp::croak("'$1' does not exist in bind hash") if !exists $named_bind{$1};
         if ( ref $named_bind{$1} && ref $named_bind{$1} eq "ARRAY" ) {
             push @binds, @{ $named_bind{$1} };
@@ -182,7 +192,7 @@ sub _named_bind {
             '?'
         }
     }ge;
-    return @binds;
+    return ($new_sql, @binds);
 }
 
 
