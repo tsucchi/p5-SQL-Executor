@@ -422,10 +422,15 @@ Or you can also use transaction management modules like L<DBIx::TransactionManag
 
 =head2 Why don't you use L<DBIx::Simple>?
 
-- I want to use L<SQL::Maker>.
-- When I need to use complex query, I want to use named placeholder.
-- I don't want to manage transaction in this module.
+=over 4
 
+=item * I want to use L<SQL::Maker>.
+
+=item * When I need to use complex query, I want to use named placeholder.
+
+=item * I don't want to manage transaction in this module.
+
+=back
 
 =head1 AUTHOR
 

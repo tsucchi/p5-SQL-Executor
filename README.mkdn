@@ -182,11 +182,9 @@ Or you can also use transaction management modules like [DBIx::TransactionManage
 
 ## Why don't you use [DBIx::Simple](http://search.cpan.org/perldoc?DBIx::Simple)?
 
-\- I want to use [SQL::Maker](http://search.cpan.org/perldoc?SQL::Maker).
-\- When I need to use complex query, I want to use named placeholder.
-\- I don't want to manage transaction in this module.
-
-
+- I want to use [SQL::Maker](http://search.cpan.org/perldoc?SQL::Maker).
+- When I need to use complex query, I want to use named placeholder.
+- I don't want to manage transaction in this module.
 
 # AUTHOR
 

@@ -183,9 +183,11 @@ How to use Transaction.
 
 FAQ
   Why don't you use DBIx::Simple?
-    - I want to use SQL::Maker. - When I need to use complex query, I want
-    to use named placeholder. - I don't want to manage transaction in this
-    module.
+    *   I want to use SQL::Maker.
+
+    *   When I need to use complex query, I want to use named placeholder.
+
+    *   I don't want to manage transaction in this module.
 
 AUTHOR
     Takuya Tsuchida <tsucchi {at} cpan.org>
