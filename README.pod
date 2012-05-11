@@ -8,10 +8,15 @@ SQL::Executor - Thin DBI wrapper using SQL::Maker
   use SQL::Executor;
   my $dbh = DBI->connect($dsn, $id, $pass);
   my $ex = SQL::Executor->new($dbh);
+  #
+  # SQL::Maker-like interfaces
   my @rows = $ex->select('SOME_TABLE', { id => 123 });
   $ex->insert('SOME_TABLE', { id => 124, value => 'xxxx'} );
   $ex->update('SOME_TABLE', { value => 'yyyy'}, { id => 124 } );
   $ex->delete('SOME_TABLE', { id => 124 } );
+  #
+  # select using SQL with named placeholder
+  my @rows= $ex->select_named('SELECT id, value1 FROM SOME_TABLE WHERE value2 = :arg1', { arg1 => 'aaa' });
 
 =head1 DESCRIPTION
 
@@ -196,6 +201,42 @@ execute query and returns statement handler($sth).
 
 
 =cut
+
+=head1 How to use Transaction.
+
+You can use L<DBI>'s transaction (begin_work and commit).
+
+  use DBI;
+  use SQL::Executor;
+  my $dbh = DBI->connect($dsn, $id, $pass);
+  my $ex = SQL::Executor->new($dbh);
+  $dbh->begin_work();
+  $ex->insert('SOME_TABLE', { id => 124, value => 'xxxx'} );
+  $ex->insert('SOME_TABLE', { id => 125, value => 'yyy'} );
+  $dbh->commit();
+
+
+Or you can also use transaction management modules like L<DBIx::TransactionManager>.
+
+  use DBI;
+  use SQL::Executor;
+  use DBIx::TransactionManager;
+  my $dbh = DBI->connect($dsn, $id, $pass);
+  my $ex = SQL::Executor->new($dbh);
+  my $tm = DBIx::TransactionManager->new($dbh);
+  my $txn = $tm->txn_scope;
+  $ex->insert('SOME_TABLE', { id => 124, value => 'xxxx'} );
+  $ex->insert('SOME_TABLE', { id => 125, value => 'yyy'} );
+  $txn->commit;
+
+=head1 FAQ
+
+=head2 Why don't you use L<DBIx::Simple>?
+
+- I want to use L<SQL::Maker>.
+- When I need to use complex query, I want to use named placeholder.
+- I don't want to manage transaction in this module.
+
 
 =head1 AUTHOR
 

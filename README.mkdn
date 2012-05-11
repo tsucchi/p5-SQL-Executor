@@ -8,10 +8,15 @@ SQL::Executor - Thin DBI wrapper using SQL::Maker
     use SQL::Executor;
     my $dbh = DBI->connect($dsn, $id, $pass);
     my $ex = SQL::Executor->new($dbh);
+    #
+    # SQL::Maker-like interfaces
     my @rows = $ex->select('SOME_TABLE', { id => 123 });
     $ex->insert('SOME_TABLE', { id => 124, value => 'xxxx'} );
     $ex->update('SOME_TABLE', { value => 'yyyy'}, { id => 124 } );
     $ex->delete('SOME_TABLE', { id => 124 } );
+    #
+    # select using SQL with named placeholder
+    my @rows= $ex->select_named('SELECT id, value1 FROM SOME_TABLE WHERE value2 = :arg1', { arg1 => 'aaa' });
 
 # DESCRIPTION
 
@@ -136,6 +141,44 @@ Do UPDATE statement. parameter is the same as select method in [SQL::Maker](http
 ## execute\_query($sql, \\@binds)
 
 execute query and returns statement handler($sth).
+
+# How to use Transaction.
+
+You can use [DBI](http://search.cpan.org/perldoc?DBI)'s transaction (begin\_work and commit).
+
+    use DBI;
+    use SQL::Executor;
+    my $dbh = DBI->connect($dsn, $id, $pass);
+    my $ex = SQL::Executor->new($dbh);
+    $dbh->begin_work();
+    $ex->insert('SOME_TABLE', { id => 124, value => 'xxxx'} );
+    $ex->insert('SOME_TABLE', { id => 125, value => 'yyy'} );
+    $dbh->commit();
+
+
+
+Or you can also use transaction management modules like [DBIx::TransactionManager](http://search.cpan.org/perldoc?DBIx::TransactionManager).
+
+    use DBI;
+    use SQL::Executor;
+    use DBIx::TransactionManager;
+    my $dbh = DBI->connect($dsn, $id, $pass);
+    my $ex = SQL::Executor->new($dbh);
+    my $tm = DBIx::TransactionManager->new($dbh);
+    my $txn = $tm->txn_scope;
+    $ex->insert('SOME_TABLE', { id => 124, value => 'xxxx'} );
+    $ex->insert('SOME_TABLE', { id => 125, value => 'yyy'} );
+    $txn->commit;
+
+# FAQ
+
+## Why don't you use [DBIx::Simple](http://search.cpan.org/perldoc?DBIx::Simple)?
+
+\- I want to use [SQL::Maker](http://search.cpan.org/perldoc?SQL::Maker).
+\- When I need to use complex query, I want to use named placeholder.
+\- I don't want to manage transaction in this module.
+
+
 
 # AUTHOR
 
