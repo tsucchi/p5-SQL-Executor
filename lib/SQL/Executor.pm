@@ -7,7 +7,7 @@ our $VERSION = '0.01';
 our @EXPORT_OK = qw(named_bind);
 
 use Class::Accessor::Lite (
-    ro => ['builder', 'dbh', 'allow_empty_condition'],
+    ro => ['builder', 'dbh', 'allow_empty_condition', 'callback', 'table_callback'],
 );
 use SQL::Maker;
 use Carp qw();
@@ -54,6 +54,30 @@ $option_href: option
 available option is as follows
 
 allow_empty_condition (BOOL default 1): allow empty condition(where) in select/delete/update
+callback (coderef): specify callback coderef. callback is called for each select* method
+table_callback (hashref) : specify callback for each table.
+
+These callbacks are useful for making row object.
+
+  my $ex = SQL::Executor->new($dbh, {
+      callback => sub {
+          my ($self, $row) = @_;
+          return CallBack::Global->new($row);
+      },
+      table_callback => { 
+          TEST => sub { #key is table name for callback.
+              my ($self, $row) = @_;
+              return CallBack::TEST->new($row);
+          },
+      },
+  });
+
+  my $row = $ex->select_by_sql($sql1, \@binds1, 'TEST');
+  # table_callback is called
+
+  my @rows = $ex->select_by_sql($sql1, \@binds1, 'TEST2');
+  # callback is called, because callback for table TEST2 is not defined.
+
 
 =cut
 
@@ -66,6 +90,8 @@ sub new {
         builder               => $builder,
         dbh                   => $dbh,
         allow_empty_condition => defined $option_href->{allow_empty_condition} ? $option_href->{allow_empty_condition} : 1,
+        callback              => $option_href->{callback},
+        table_callback        => $option_href->{table_callback},
     };
     bless $self, $class;
 }
@@ -112,7 +138,7 @@ sub select_all {
 }
 
 
-=head2 select_named($sql, $params_href)
+=head2 select_named($sql, $params_href, $table_name)
 
 select row(s). In array context, this method behaves the same as select_all_with_fields.
 In scalar context, this method behaves the same as select_one_with_fileds
@@ -122,17 +148,19 @@ You can use named placeholder in SQL like this,
   my $ex = SQL::Executor->new($dbh);
   my $row = $ex->select_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
 
+$table_name is used for callback.
+
 =cut
 
 sub select_named {
-    my ($self, $sql, $params_href) = @_;
+    my ($self, $sql, $params_href, $table_name) = @_;
     if( wantarray() ) {
-        return $self->select_all_named($sql, $params_href);
+        return $self->select_all_named($sql, $params_href, $table_name);
     }
-    return $self->select_row_named($sql, $params_href);
+    return $self->select_row_named($sql, $params_href, $table_name);
 }
 
-=head2 select_row_named($sql, $params_href)
+=head2 select_row_named($sql, $params_href, $table_name)
 
 select only one row. You can use named placeholder in SQL like this,
 
@@ -141,15 +169,17 @@ select only one row. You can use named placeholder in SQL like this,
 
 this method returns hash ref and it is the same as return value in DBI's selectrow_hashref/fetchrow_hashref.
 
+$table_name is used for callback.
+
 =cut
 
 sub select_row_named {
-    my ($self, $sql, $params_href) = @_;
+    my ($self, $sql, $params_href, $table_name) = @_;
     my ($new_sql, @binds) = named_bind($sql, $params_href);
-    return $self->select_row_by_sql($new_sql, \@binds);
+    return $self->select_row_by_sql($new_sql, \@binds, $table_name);
 }
 
-=head2 select_all_named($sql, $params_href)
+=head2 select_all_named($sql, $params_href, $table_name)
 
 select all rows. You can use named placeholder in SQL like this,
 
@@ -157,13 +187,14 @@ select all rows. You can use named placeholder in SQL like this,
   my @rows = $ex->select_all_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
 
 this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow_hashref/fetchrow_hashref).
+$table_name is used for callback.
 
 =cut
 
 sub select_all_named {
-    my ($self, $sql, $params_href) = @_;
+    my ($self, $sql, $params_href, $table_name) = @_;
     my ($new_sql, @binds) = named_bind($sql, $params_href);
-    return $self->select_all_by_sql($new_sql, \@binds);
+    return $self->select_all_by_sql($new_sql, \@binds, $table_name);
 }
 
 
@@ -199,7 +230,7 @@ sub named_bind {
 }
 
 
-=head2 select_by_sql($sql, \@binds)
+=head2 select_by_sql($sql, \@binds, $table_name)
 
 select row(s). In array context, this method behaves the same as select_all_with_fields.
 In scalar context, this method behaves the same as select_one_with_fileds
@@ -207,17 +238,19 @@ In scalar context, this method behaves the same as select_one_with_fileds
   my $ex = SQL::Executor->new($dbh);
   my $row = $ex->select_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
+$table_name is only used for callback.
+
 =cut
 
 sub select_by_sql {
-    my ($self, $sql, $binds_aref) = @_;
+    my ($self, $sql, $binds_aref, $table_name) = @_;
     if( wantarray() ) {
-        return $self->select_all_by_sql($sql, $binds_aref);
+        return $self->select_all_by_sql($sql, $binds_aref, $table_name);
     }
-    return $self->select_row_by_sql($sql, $binds_aref);
+    return $self->select_row_by_sql($sql, $binds_aref, $table_name);
 }
 
-=head2 select_row_by_sql($sql, \@binds)
+=head2 select_row_by_sql($sql, \@binds, $table_name)
 
 select only one row.
 
@@ -229,13 +262,21 @@ this method returns hash ref and it is the same as return value in DBI's selectr
 =cut
 
 sub select_row_by_sql {
-    my ($self, $sql, $binds_aref) = @_;
+    my ($self, $sql, $binds_aref, $table_name) = @_;
     my $dbh = $self->dbh;
     my $row = $dbh->selectrow_hashref($sql, undef, @{ $binds_aref || [] } );
+    if( defined $self->table_callback && defined $self->table_callback->{$table_name} ) {
+        my $callback = $self->table_callback->{$table_name};
+        return $callback->($self, $row);
+    }
+    if ( defined $self->callback ) {
+        my $callback = $self->callback;
+        return $callback->($self, $row);
+    }
     return $row;
 }
 
-=head2 select_all_by_sql($sql, \@binds)
+=head2 select_all_by_sql($sql, \@binds, $table_name)
 
 select all rows.
 
@@ -247,9 +288,19 @@ this method returns array that is composed of hash refs. (hash ref is same as DB
 =cut
 
 sub select_all_by_sql {
-    my ($self, $sql, $binds_aref) = @_;
+    my ($self, $sql, $binds_aref, $table_name) = @_;
     my $dbh = $self->dbh;
     my @rows = @{ $dbh->selectall_arrayref($sql, { Slice => {} }, @{ $binds_aref || [] }) };
+    if( defined $self->table_callback && defined $self->table_callback->{$table_name} ) {
+        my $callback = $self->table_callback->{$table_name};
+        my @result = map{ $callback->($self, $_) } @rows;
+        return @result;
+    }
+    if ( defined $self->callback ) {
+        my $callback = $self->callback;
+        my @result = map{ $callback->($self, $_) } @rows;
+        return @result;
+    }
     return @rows;
 }
 
@@ -282,7 +333,7 @@ sub select_row_with_fields {
     Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
-    return $self->select_row_by_sql($sql, \@binds);
+    return $self->select_row_by_sql($sql, \@binds, $table_name);
 }
 
 =head2 select_all_with_fields($table_name, $fields_aref, $where, $option)
@@ -297,7 +348,7 @@ sub select_all_with_fields {
     Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
-    return $self->select_all_by_sql($sql, \@binds);
+    return $self->select_all_by_sql($sql, \@binds, $table_name);
 }
 
 

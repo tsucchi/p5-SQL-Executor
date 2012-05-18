@@ -5,6 +5,8 @@ use SQL::Executor;
 use DBI;
 use Test::More;
 use t::Util;
+use t::Global;
+use t::Table;
 
 my $dbh = prepare_dbh();
 prepare_testdata($dbh);
@@ -36,6 +38,45 @@ subtest 'select_with_fields', sub {
     my @rows = $ex->select_with_fields($table_name, $fields, $condition, $option);
     rows_ok(@rows);
 };
+
+subtest 'with_callback', sub {
+    my $ex = SQL::Executor->new($dbh, {
+        callback => sub {
+            my ($self, $row) = @_;
+            return t::Global->new($row);
+        },
+    });
+
+    my $row = $ex->select_with_fields($table_name, $fields, $condition, $option);
+    is( $row->name, 'global_callback');
+
+    my @rows = $ex->select_with_fields($table_name, $fields, $condition, $option);
+    is( $rows[0]->name, 'global_callback');
+    is( $rows[1]->name, 'global_callback');
+};
+
+subtest 'with_table_callback', sub {
+    my $ex = SQL::Executor->new($dbh, {
+        callback => sub {
+            my ($self, $row) = @_;
+            return t::Global->new($row);
+        },
+        table_callback => { 
+            TEST => sub {
+                my ($self, $row) = @_;
+                return t::Table->new($row);
+            },
+        },
+    });
+
+    my $row = $ex->select_with_fields($table_name, $fields, $condition, $option);
+    is( $row->name, 'table_callback');
+
+    my @rows = $ex->select_with_fields($table_name, $fields, $condition, $option);
+    is( $rows[0]->name, 'table_callback');
+    is( $rows[1]->name, 'table_callback');
+};
+
 
 subtest 'select_row allow_empty_condition', sub {
     my $ex = SQL::Executor->new($dbh, { allow_empty_condition => 0 });

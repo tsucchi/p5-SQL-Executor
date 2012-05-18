@@ -5,6 +5,8 @@ use SQL::Executor;
 use DBI;
 use Test::More;
 use t::Util;
+use t::Global;
+use t::Table;
 
 my $dbh = prepare_dbh();
 prepare_testdata($dbh);
@@ -33,6 +35,45 @@ subtest 'select_by_sql', sub {
     my @rows = $ex->select_by_sql($sql, \@binds);
     rows_ok(@rows);
 };
+
+subtest 'with_callback', sub {
+    my $ex = SQL::Executor->new($dbh, {
+        callback => sub {
+            my ($self, $row) = @_;
+            return t::Global->new($row);
+        },
+    });
+
+    my $row = $ex->select_by_sql($sql, \@binds);
+    is( $row->name, 'global_callback');
+
+    my @rows = $ex->select_by_sql($sql, \@binds);
+    is( $rows[0]->name, 'global_callback');
+    is( $rows[1]->name, 'global_callback');
+};
+
+subtest 'with_table_callback', sub {
+    my $ex = SQL::Executor->new($dbh, {
+        callback => sub {
+            my ($self, $row) = @_;
+            return t::Global->new($row);
+        },
+        table_callback => { 
+            TEST => sub {
+                my ($self, $row) = @_;
+                return t::Table->new($row);
+            },
+        },
+    });
+
+    my $row = $ex->select_by_sql($sql, \@binds, 'TEST');
+    is( $row->name, 'table_callback');
+
+    my @rows = $ex->select_by_sql($sql, \@binds, 'TEST');
+    is( $rows[0]->name, 'table_callback');
+    is( $rows[1]->name, 'table_callback');
+};
+
 
 done_testing;
 
