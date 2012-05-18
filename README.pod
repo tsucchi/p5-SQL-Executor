@@ -42,6 +42,30 @@ $option_href: option
 available option is as follows
 
 allow_empty_condition (BOOL default 1): allow empty condition(where) in select/delete/update
+callback (coderef): specify callback coderef. callback is called for each select* method
+table_callback (hashref) : specify callback for each table.
+
+These callbacks are useful for making row object.
+
+  my $ex = SQL::Executor->new($dbh, {
+      callback => sub {
+          my ($self, $row) = @_;
+          return CallBack::Global->new($row);
+      },
+      table_callback => { 
+          TEST => sub { #key is table name for callback.
+              my ($self, $row) = @_;
+              return CallBack::TEST->new($row);
+          },
+      },
+  });
+
+  my $row = $ex->select_by_sql($sql1, \@binds1, 'TEST');
+  # table_callback is called
+
+  my @rows = $ex->select_by_sql($sql1, \@binds1, 'TEST2');
+  # callback is called, because callback for table TEST2 is not defined.
+
 
 
 =cut
@@ -70,7 +94,7 @@ this method returns array that is composed of hash refs. (hash ref is same as DB
 
 =cut
 
-=head2 select_named($sql, $params_href)
+=head2 select_named($sql, $params_href, $table_name)
 
 select row(s). In array context, this method behaves the same as select_all_with_fields.
 In scalar context, this method behaves the same as select_one_with_fileds
@@ -80,10 +104,12 @@ You can use named placeholder in SQL like this,
   my $ex = SQL::Executor->new($dbh);
   my $row = $ex->select_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
 
+$table_name is used for callback.
+
 
 =cut
 
-=head2 select_row_named($sql, $params_href)
+=head2 select_row_named($sql, $params_href, $table_name)
 
 select only one row. You can use named placeholder in SQL like this,
 
@@ -92,10 +118,12 @@ select only one row. You can use named placeholder in SQL like this,
 
 this method returns hash ref and it is the same as return value in DBI's selectrow_hashref/fetchrow_hashref.
 
+$table_name is used for callback.
+
 
 =cut
 
-=head2 select_all_named($sql, $params_href)
+=head2 select_all_named($sql, $params_href, $table_name)
 
 select all rows. You can use named placeholder in SQL like this,
 
@@ -103,6 +131,7 @@ select all rows. You can use named placeholder in SQL like this,
   my @rows = $ex->select_all_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
 
 this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow_hashref/fetchrow_hashref).
+$table_name is used for callback.
 
 
 =cut
@@ -118,7 +147,7 @@ returns sql which is executable in execute_query() and parameters for bind.
 
 =cut
 
-=head2 select_by_sql($sql, \@binds)
+=head2 select_by_sql($sql, \@binds, $table_name)
 
 select row(s). In array context, this method behaves the same as select_all_with_fields.
 In scalar context, this method behaves the same as select_one_with_fileds
@@ -126,10 +155,12 @@ In scalar context, this method behaves the same as select_one_with_fileds
   my $ex = SQL::Executor->new($dbh);
   my $row = $ex->select_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
+$table_name is only used for callback.
+
 
 =cut
 
-=head2 select_row_by_sql($sql, \@binds)
+=head2 select_row_by_sql($sql, \@binds, $table_name)
 
 select only one row.
 
@@ -141,7 +172,7 @@ this method returns hash ref and it is the same as return value in DBI's selectr
 
 =cut
 
-=head2 select_all_by_sql($sql, \@binds)
+=head2 select_all_by_sql($sql, \@binds, $table_name)
 
 select all rows.
 

@@ -36,6 +36,31 @@ $option\_href: option
 available option is as follows
 
 allow\_empty\_condition (BOOL default 1): allow empty condition(where) in select/delete/update
+callback (coderef): specify callback coderef. callback is called for each select\* method
+table\_callback (hashref) : specify callback for each table.
+
+These callbacks are useful for making row object.
+
+    my $ex = SQL::Executor->new($dbh, {
+        callback => sub {
+            my ($self, $row) = @_;
+            return CallBack::Global->new($row);
+        },
+        table_callback => { 
+            TEST => sub { #key is table name for callback.
+                my ($self, $row) = @_;
+                return CallBack::TEST->new($row);
+            },
+        },
+    });
+
+    my $row = $ex->select_by_sql($sql1, \@binds1, 'TEST');
+    # table_callback is called
+
+    my @rows = $ex->select_by_sql($sql1, \@binds1, 'TEST2');
+    # callback is called, because callback for table TEST2 is not defined.
+
+
 
 ## select($table\_name, $where, $option)
 
@@ -52,7 +77,7 @@ this method returns hash ref and it is the same as return value in DBI's selectr
 select all rows. parameter is the same as select method in [SQL::Maker](http://search.cpan.org/perldoc?SQL::Maker). But array ref for filed names are not needed.
 this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow\_hashref/fetchrow\_hashref).
 
-## select\_named($sql, $params\_href)
+## select\_named($sql, $params\_href, $table\_name)
 
 select row(s). In array context, this method behaves the same as select\_all\_with\_fields.
 In scalar context, this method behaves the same as select\_one\_with\_fileds
@@ -62,7 +87,9 @@ You can use named placeholder in SQL like this,
     my $ex = SQL::Executor->new($dbh);
     my $row = $ex->select_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
 
-## select\_row\_named($sql, $params\_href)
+$table\_name is used for callback.
+
+## select\_row\_named($sql, $params\_href, $table\_name)
 
 select only one row. You can use named placeholder in SQL like this,
 
@@ -71,7 +98,9 @@ select only one row. You can use named placeholder in SQL like this,
 
 this method returns hash ref and it is the same as return value in DBI's selectrow\_hashref/fetchrow\_hashref.
 
-## select\_all\_named($sql, $params\_href)
+$table\_name is used for callback.
+
+## select\_all\_named($sql, $params\_href, $table\_name)
 
 select all rows. You can use named placeholder in SQL like this,
 
@@ -79,6 +108,7 @@ select all rows. You can use named placeholder in SQL like this,
     my @rows = $ex->select_all_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
 
 this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow\_hashref/fetchrow\_hashref).
+$table\_name is used for callback.
 
 ## named\_bind($sql, $params\_href)
 
@@ -88,7 +118,7 @@ returns sql which is executable in execute\_query() and parameters for bind.
     # $sql   =>  "SELECT * FROM SOME_TABLE WHERE id = ?"
     # @binds => (123)
 
-## select\_by\_sql($sql, \\@binds)
+## select\_by\_sql($sql, \\@binds, $table\_name)
 
 select row(s). In array context, this method behaves the same as select\_all\_with\_fields.
 In scalar context, this method behaves the same as select\_one\_with\_fileds
@@ -96,7 +126,9 @@ In scalar context, this method behaves the same as select\_one\_with\_fileds
     my $ex = SQL::Executor->new($dbh);
     my $row = $ex->select_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
-## select\_row\_by\_sql($sql, \\@binds)
+$table\_name is only used for callback.
+
+## select\_row\_by\_sql($sql, \\@binds, $table\_name)
 
 select only one row.
 
@@ -105,7 +137,7 @@ select only one row.
 
 this method returns hash ref and it is the same as return value in DBI's selectrow\_hashref/fetchrow\_hashref.
 
-## select\_all\_by\_sql($sql, \\@binds)
+## select\_all\_by\_sql($sql, \\@binds, $table\_name)
 
 select all rows.
 
