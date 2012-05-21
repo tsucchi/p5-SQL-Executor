@@ -111,14 +111,6 @@ subtest 'select_all allow_empty_condition', sub {
     like( $@, qr/^condition is empty/);
 };
 
-# subtest 'select allow_empty_condition', sub {
-#     my $ex = SQL::Executor->new($dbh, { allow_empty_condition => 0 });
-#     eval {
-#         my @rows = $ex->select($table_name);
-#         fail("exception expected");
-#     };
-#     like( $@, qr/^condition is empty/);
-# };
 
 
 done_testing;
