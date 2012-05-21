@@ -64,7 +64,7 @@ These callbacks are useful for making row object.
           my ($self, $row) = @_;
           return CallBack::Global->new($row);
       },
-      table_callback => { 
+      table_callback => sub { 
           TEST => sub { #key is table name for callback.
               my ($self, $row) = @_;
               return CallBack::TEST->new($row);
