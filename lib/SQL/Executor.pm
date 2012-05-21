@@ -301,12 +301,8 @@ sub select_row_by_sql {
     my ($self, $sql, $binds_aref, $table_name) = @_;
     my $dbh = $self->dbh;
     my $row = $dbh->selectrow_hashref($sql, undef, @{ $binds_aref || [] } );
-    if( defined $self->table_callback && defined $self->table_callback->{$table_name} ) {
-        my $callback = $self->table_callback->{$table_name};
-        return $callback->($self, $row);
-    }
-    if ( defined $self->callback ) {
-        my $callback = $self->callback;
+    my $callback = $self->callback_for($table_name);
+    if ( defined $callback ) {
         return $callback->($self, $row);
     }
     return $row;
@@ -327,13 +323,8 @@ sub select_all_by_sql {
     my ($self, $sql, $binds_aref, $table_name) = @_;
     my $dbh = $self->dbh;
     my @rows = @{ $dbh->selectall_arrayref($sql, { Slice => {} }, @{ $binds_aref || [] }) };
-    if( defined $self->table_callback && defined $self->table_callback->{$table_name} ) {
-        my $callback = $self->table_callback->{$table_name};
-        my @result = map{ $callback->($self, $_) } @rows;
-        return @result;
-    }
-    if ( defined $self->callback ) {
-        my $callback = $self->callback;
+    my $callback = $self->callback_for($table_name);
+    if( defined $callback ) {
         my @result = map{ $callback->($self, $_) } @rows;
         return @result;
     }
