@@ -27,6 +27,14 @@ subtest 'select_all_by_sql', sub {
     rows_ok(@rows);
 };
 
+subtest 'select_itr_by_sql', sub {
+    my $ex = SQL::Executor->new($dbh);
+    my $itr = $ex->select_itr_by_sql($sql, \@binds);
+    my $row = $itr->next;
+    single_row_ok($row);
+};
+
+
 subtest 'select_by_sql', sub {
     my $ex = SQL::Executor->new($dbh);
     my $row = $ex->select_by_sql($sql, \@binds);
@@ -50,6 +58,11 @@ subtest 'with_callback', sub {
     my @rows = $ex->select_by_sql($sql, \@binds);
     is( $rows[0]->name, 'global_callback');
     is( $rows[1]->name, 'global_callback');
+
+    my $itr = $ex->select_itr_by_sql($sql, \@binds);
+    my $next_row = $itr->next;
+    is( $next_row->name, 'global_callback');
+
 };
 
 subtest 'with_table_callback', sub {
@@ -72,6 +85,11 @@ subtest 'with_table_callback', sub {
     my @rows = $ex->select_by_sql($sql, \@binds, 'TEST');
     is( $rows[0]->name, 'table_callback');
     is( $rows[1]->name, 'table_callback');
+
+    my $itr = $ex->select_itr_by_sql($sql, \@binds, 'TEST');
+    my $next_row = $itr->next;
+    is( $next_row->name, 'table_callback');
+
 };
 
 

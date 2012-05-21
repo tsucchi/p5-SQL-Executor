@@ -38,6 +38,22 @@ subtest 'select', sub {
     rows_ok(@rows);
 };
 
+subtest 'select_itr', sub {
+    my $ex = SQL::Executor->new($dbh);
+
+    my $itr = $ex->select_itr($table_name, $condition, $option);
+    is( ref $itr, 'SQL::Executor::Iterator' );
+    my $itr_count = 0;
+    my @rows;
+    while ( my $row = $itr->next ) {
+        push (@rows, $row);
+        $itr_count++;
+    }
+    rows_ok(@rows);
+    is( $itr_count, 2, 'iterator count' );
+};
+
+
 subtest 'select_with_callback', sub {
     my $ex = SQL::Executor->new($dbh, {
         callback => sub {
@@ -52,6 +68,11 @@ subtest 'select_with_callback', sub {
 
     my @rows = $ex->select($table_name, $condition, $option);
     row_objs_ok(@rows);
+
+    my $itr = $ex->select_itr($table_name, $condition, $option);
+    my $next_row = $itr->next;
+    is( $next_row->name, 'global_callback');
+    single_row_obj_ok($next_row);
 };
 
 subtest 'select_with_table_callback', sub {
@@ -76,6 +97,11 @@ subtest 'select_with_table_callback', sub {
     is( $rows[0]->name, 'table_callback');
     is( $rows[1]->name, 'table_callback');
     row_objs_ok(@rows);
+
+    my $itr = $ex->select_itr($table_name, $condition, $option);
+    my $next_row = $itr->next;
+    is( $next_row->name, 'table_callback');
+    single_row_obj_ok($next_row);
 };
 
 

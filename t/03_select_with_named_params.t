@@ -44,6 +44,14 @@ subtest 'select_named', sub {
     rows_ok(@rows);
 };
 
+subtest 'select_itr_named', sub {
+    my $ex = SQL::Executor->new($dbh);
+    my $itr = $ex->select_itr_named($sql, $condition);
+    my $row = $itr->next;
+    single_row_ok($row);
+};
+
+
 subtest 'with_callback', sub {
     my $ex = SQL::Executor->new($dbh, {
         callback => sub {
@@ -58,6 +66,11 @@ subtest 'with_callback', sub {
     my @rows = $ex->select_named($sql, $condition);
     is( $rows[0]->name, 'global_callback');
     is( $rows[1]->name, 'global_callback');
+
+    my $itr = $ex->select_itr_named($sql, $condition);
+    my $next_row = $itr->next;
+    is( $next_row->name, 'global_callback');
+
 };
 
 subtest 'with_table_callback', sub {
@@ -80,6 +93,11 @@ subtest 'with_table_callback', sub {
     my @rows = $ex->select_named($sql, $condition, 'TEST');
     is( $rows[0]->name, 'table_callback');
     is( $rows[1]->name, 'table_callback');
+
+
+    my $itr = $ex->select_itr_named($sql, $condition, 'TEST');
+    my $next_row = $itr->next;
+    is( $next_row->name, 'table_callback');
 };
 
 

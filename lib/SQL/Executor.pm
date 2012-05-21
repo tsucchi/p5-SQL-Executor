@@ -11,6 +11,8 @@ use Class::Accessor::Lite (
 );
 use SQL::Maker;
 use Carp qw();
+use SQL::Executor::Iterator;
+
 
 =head1 NAME
 
@@ -137,6 +139,23 @@ sub select_all {
     return $self->select_all_with_fields($table_name, ['*'], $where, $option);
 }
 
+=head2 select_itr($table_name, $where, $option)
+
+select and returns iterator. parameter is the same as select method in L<SQL::Maker>. But array ref for field names are not needed.
+Iterator is L<SQL::Executor::Iterator> object.
+
+  my $itr = select_itr('SOME_TABLE', { name => 'aaa' });
+  while( my $row = $itr->next ) {
+      # ... using row
+  }
+
+=cut
+
+sub select_itr {
+    my ($self, $table_name, $where, $option) = @_;
+    return $self->select_itr_with_fields($table_name, ['*'], $where, $option);
+}
+
 
 =head2 select_named($sql, $params_href, $table_name)
 
@@ -195,6 +214,23 @@ sub select_all_named {
     my ($self, $sql, $params_href, $table_name) = @_;
     my ($new_sql, @binds) = named_bind($sql, $params_href);
     return $self->select_all_by_sql($new_sql, \@binds, $table_name);
+}
+
+=head2 select_itr_named($sql, $params_href, $table_name)
+
+select and returns iterator. You can use named placeholder in SQL like this,
+
+  my $ex = SQL::Executor->new($dbh);
+  my $itr = $ex->select_itr_named("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 1234 });
+
+$table_name is used for callback.
+
+=cut
+
+sub select_itr_named {
+    my ($self, $sql, $params_href, $table_name) = @_;
+    my ($new_sql, @binds) = named_bind($sql, $params_href);
+    return $self->select_itr_by_sql($new_sql, \@binds, $table_name);
 }
 
 
@@ -304,6 +340,44 @@ sub select_all_by_sql {
     return @rows;
 }
 
+=head2 callback_for($table_name) 
+
+returns callback subref for $table_name. If callback for table name is not found and found global callback.
+retutns global callback.
+
+=cut
+
+sub callback_for {
+    my ($self, $table_name) = @_;
+    if( defined $table_name && defined $self->table_callback && defined $self->table_callback->{$table_name} ) {
+        return $self->table_callback->{$table_name};
+    }
+    if ( defined $self->callback ) {
+        return $self->callback;
+    }
+    return;
+}
+
+
+=head2 select_itr_by_sql($sql, \@binds, $table_name)
+
+select and returns iterator
+
+  my $ex = SQL::Executor->new($dbh);
+  my $itr = $ex->select_itr_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
+
+Iterator is L<SQL::Executor::Iterator> object.
+
+=cut
+
+sub select_itr_by_sql {
+    my ($self, $sql, $binds_aref, $table_name) = @_;
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
+    $sth->execute(@{ $binds_aref || [] });
+    return SQL::Executor::Iterator->new($sth, $table_name, $self);
+}
+
 
 =head2 select_with_fields($table_name, $fields_aref, $where, $option)
 
@@ -349,6 +423,20 @@ sub select_all_with_fields {
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
     return $self->select_all_by_sql($sql, \@binds, $table_name);
+}
+
+=head2 select_itr_with_fields($table_name, $fields_aref, $where, $option)
+
+select and return iterator object(L<SQL::Executor::Iterator>). parameter is the same as select method in L<SQL::Maker>.
+
+=cut
+
+sub select_itr_with_fields {
+    my ($self, $table_name, $fields_aref, $where, $option) = @_;
+    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
+    my $builder = $self->builder;
+    my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
+    return $self->select_itr_by_sql($sql, \@binds, $table_name);
 }
 
 
