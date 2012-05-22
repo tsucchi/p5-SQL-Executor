@@ -395,9 +395,7 @@ this method returns hash ref and it is the same as return value in DBI's selectr
 
 sub select_row_with_fields {
     my ($self, $table_name, $fields_aref, $where, $option) = @_;
-    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
-    my $builder = $self->builder;
-    my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
+    my ($sql, @binds) = $self->_prepare_select_statement($table_name, $fields_aref, $where, $option);
     return $self->select_row_by_sql($sql, \@binds, $table_name);
 }
 
@@ -410,9 +408,7 @@ this method returns array that is composed of hash refs. (hash ref is same as DB
 
 sub select_all_with_fields {
     my ($self, $table_name, $fields_aref, $where, $option) = @_;
-    Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
-    my $builder = $self->builder;
-    my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
+    my ($sql, @binds) = $self->_prepare_select_statement($table_name, $fields_aref, $where, $option);
     return $self->select_all_by_sql($sql, \@binds, $table_name);
 }
 
@@ -424,10 +420,18 @@ select and return iterator object(L<SQL::Executor::Iterator>). parameter is the 
 
 sub select_itr_with_fields {
     my ($self, $table_name, $fields_aref, $where, $option) = @_;
+    my ($sql, @binds) = $self->_prepare_select_statement($table_name, $fields_aref, $where, $option);
+    return $self->select_itr_by_sql($sql, \@binds, $table_name);
+}
+
+
+# prepare select statment using SQL::Maker
+sub _prepare_select_statement {
+    my ($self, $table_name, $fields_aref, $where, $option) = @_;
     Carp::croak "condition is empty" if ( !$self->allow_empty_condition && $self->_is_empty_where($where) );
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->select($table_name, $fields_aref, $where, $option);
-    return $self->select_itr_by_sql($sql, \@binds, $table_name);
+    return ($sql, @binds);
 }
 
 
