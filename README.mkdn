@@ -37,28 +37,18 @@ available option is as follows
 
 allow\_empty\_condition (BOOL default 1): allow empty condition(where) in select/delete/update
 callback (coderef): specify callback coderef. callback is called for each select\* method
-table\_callback (hashref) : specify callback for each table.
 
 These callbacks are useful for making row object.
 
     my $ex = SQL::Executor->new($dbh, {
         callback => sub {
-            my ($self, $row) = @_;
-            return CallBack::Global->new($row);
-        },
-        table_callback => sub { 
-            TEST => sub { #key is table name for callback.
-                my ($self, $row) = @_;
-                return CallBack::TEST->new($row);
-            },
+            my ($self, $row, $table_name) = @_;
+            return CallBack::Class->new($row);
         },
     });
 
     my $row = $ex->select_by_sql($sql1, \@binds1, 'TEST');
-    # table_callback is called
-
-    my @rows = $ex->select_by_sql($sql1, \@binds1, 'TEST2');
-    # callback is called, because callback for table TEST2 is not defined.
+    # $row isa 'CallBack::Class'
 
 
 
@@ -164,11 +154,6 @@ select all rows.
     my @rows = $ex->select_all_by_sql("SELECT * FROM SOME_TABLE WHERE id = ?", [1234]);
 
 this method returns array that is composed of hash refs. (hash ref is same as DBI's selectrow\_hashref/fetchrow\_hashref).
-
-## callback\_for($table\_name) 
-
-returns callback subref for $table\_name. If callback for table name is not found and found global callback.
-retutns global callback.
 
 ## select\_itr\_by\_sql($sql, \\@binds, $table\_name)
 

@@ -5,8 +5,7 @@ use SQL::Executor;
 use DBI;
 use Test::More;
 use t::Util;
-use t::Global;
-use t::Table;
+use t::Row;
 
 my $dbh = prepare_dbh();
 prepare_testdata($dbh);
@@ -50,20 +49,20 @@ subtest 'with_callback', sub {
     my $ex = SQL::Executor->new($dbh, {
         callback => sub {
             my ($self, $row, $table_name) = @_;
-            return t::Global->new($row);
+            return t::Row->new($row);
         },
     });
 
     my $row = $ex->select_with_fields($table_name, $fields, $condition, $option);
-    is( $row->name, 'global_callback');
+    is( $row->name, 'callback');
 
     my @rows = $ex->select_with_fields($table_name, $fields, $condition, $option);
-    is( $rows[0]->name, 'global_callback');
-    is( $rows[1]->name, 'global_callback');
+    is( $rows[0]->name, 'callback');
+    is( $rows[1]->name, 'callback');
 
     my $itr = $ex->select_itr_with_fields($table_name, $fields, $condition, $option);
     my $next_row = $itr->next;
-    is( $next_row->name, 'global_callback');
+    is( $next_row->name, 'callback');
 };
 
 

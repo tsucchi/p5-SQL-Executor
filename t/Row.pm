@@ -1,4 +1,4 @@
-package t::Global;
+package t::Row;
 use strict;
 use warnings;
 
@@ -8,7 +8,7 @@ sub new {
     bless $self, $class;
 }
 sub name { 
-    return 'global_callback';
+    return 'callback';
 }
 sub id {
     my ($self) = @_;
