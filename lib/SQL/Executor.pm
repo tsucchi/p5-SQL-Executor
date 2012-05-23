@@ -7,7 +7,7 @@ our $VERSION = '0.01';
 our @EXPORT_OK = qw(named_bind);
 
 use Class::Accessor::Lite (
-    ro => ['builder', 'dbh', 'allow_empty_condition', 'callback', 'table_callback'],
+    ro => ['builder', 'dbh', 'allow_empty_condition', 'callback'],
 );
 use SQL::Maker;
 use Carp qw();
@@ -57,28 +57,18 @@ available option is as follows
 
 allow_empty_condition (BOOL default 1): allow empty condition(where) in select/delete/update
 callback (coderef): specify callback coderef. callback is called for each select* method
-table_callback (hashref) : specify callback for each table.
 
 These callbacks are useful for making row object.
 
   my $ex = SQL::Executor->new($dbh, {
       callback => sub {
-          my ($self, $row) = @_;
-          return CallBack::Global->new($row);
-      },
-      table_callback => sub { 
-          TEST => sub { #key is table name for callback.
-              my ($self, $row) = @_;
-              return CallBack::TEST->new($row);
-          },
+          my ($self, $row, $table_name) = @_;
+          return CallBack::Class->new($row);
       },
   });
 
   my $row = $ex->select_by_sql($sql1, \@binds1, 'TEST');
-  # table_callback is called
-
-  my @rows = $ex->select_by_sql($sql1, \@binds1, 'TEST2');
-  # callback is called, because callback for table TEST2 is not defined.
+  # $row isa 'CallBack::Class'
 
 
 =cut
@@ -93,7 +83,6 @@ sub new {
         dbh                   => $dbh,
         allow_empty_condition => defined $option_href->{allow_empty_condition} ? $option_href->{allow_empty_condition} : 1,
         callback              => $option_href->{callback},
-        table_callback        => $option_href->{table_callback},
     };
     bless $self, $class;
 }
@@ -301,9 +290,9 @@ sub select_row_by_sql {
     my ($self, $sql, $binds_aref, $table_name) = @_;
     my $dbh = $self->dbh;
     my $row = $dbh->selectrow_hashref($sql, undef, @{ $binds_aref || [] } );
-    my $callback = $self->callback_for($table_name);
+    my $callback = $self->callback;
     if ( defined $callback && defined $row ) {
-        return $callback->($self, $row);
+        return $callback->($self, $row, $table_name);
     }
     return $row;
 }
@@ -323,30 +312,12 @@ sub select_all_by_sql {
     my ($self, $sql, $binds_aref, $table_name) = @_;
     my $dbh = $self->dbh;
     my @rows = @{ $dbh->selectall_arrayref($sql, { Slice => {} }, @{ $binds_aref || [] }) };
-    my $callback = $self->callback_for($table_name);
+    my $callback = $self->callback;
     if( defined $callback ) {
-        my @result = map{ $callback->($self, $_) } @rows;
+        my @result = map{ $callback->($self, $_, $table_name) } @rows;
         return @result;
     }
     return @rows;
-}
-
-=head2 callback_for($table_name) 
-
-returns callback subref for $table_name. If callback for table name is not found and found global callback.
-retutns global callback.
-
-=cut
-
-sub callback_for {
-    my ($self, $table_name) = @_;
-    if( defined $table_name && defined $self->table_callback && defined $self->table_callback->{$table_name} ) {
-        return $self->table_callback->{$table_name};
-    }
-    if ( defined $self->callback ) {
-        return $self->callback;
-    }
-    return;
 }
 
 

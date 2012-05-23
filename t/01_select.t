@@ -57,7 +57,7 @@ subtest 'select_itr', sub {
 subtest 'select_with_callback', sub {
     my $ex = SQL::Executor->new($dbh, {
         callback => sub {
-            my ($self, $row) = @_;
+            my ($self, $row, $table_name) = @_;
             return t::Global->new($row);
         },
     });
@@ -72,35 +72,6 @@ subtest 'select_with_callback', sub {
     my $itr = $ex->select_itr($table_name, $condition, $option);
     my $next_row = $itr->next;
     is( $next_row->name, 'global_callback');
-    single_row_obj_ok($next_row);
-};
-
-subtest 'select_with_table_callback', sub {
-    my $ex = SQL::Executor->new($dbh, {
-        callback => sub {
-            my ($self, $row) = @_;
-            return t::Global->new($row);
-        },
-        table_callback => { 
-            TEST => sub {
-                my ($self, $row) = @_;
-                return t::Table->new($row);
-            },
-        },
-    });
-
-    my $row = $ex->select($table_name, $condition, $option);
-    is( $row->name, 'table_callback');
-    single_row_obj_ok($row);
-
-    my @rows = $ex->select($table_name, $condition, $option);
-    is( $rows[0]->name, 'table_callback');
-    is( $rows[1]->name, 'table_callback');
-    row_objs_ok(@rows);
-
-    my $itr = $ex->select_itr($table_name, $condition, $option);
-    my $next_row = $itr->next;
-    is( $next_row->name, 'table_callback');
     single_row_obj_ok($next_row);
 };
 

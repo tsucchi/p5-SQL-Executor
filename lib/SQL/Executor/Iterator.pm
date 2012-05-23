@@ -60,9 +60,9 @@ sub next {
         $sth->finish;
         return;
     }
-    my $callback = $self->executor->callback_for($self->table_name);
+    my $callback = $self->executor->callback;
     if( defined $callback ) {
-        return $callback->($self->executor, $row);
+        return $callback->($self->executor, $row, $self->table_name);
     }
     return $row;
 }

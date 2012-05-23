@@ -55,7 +55,7 @@ subtest 'select_itr_named', sub {
 subtest 'with_callback', sub {
     my $ex = SQL::Executor->new($dbh, {
         callback => sub {
-            my ($self, $row) = @_;
+            my ($self, $row, $table_name) = @_;
             return t::Global->new($row);
         },
     });
@@ -73,32 +73,6 @@ subtest 'with_callback', sub {
 
 };
 
-subtest 'with_table_callback', sub {
-    my $ex = SQL::Executor->new($dbh, {
-        callback => sub {
-            my ($self, $row) = @_;
-            return t::Global->new($row);
-        },
-        table_callback => { 
-            TEST => sub {
-                my ($self, $row) = @_;
-                return t::Table->new($row);
-            },
-        },
-    });
-
-    my $row = $ex->select_named($sql, $condition, 'TEST');
-    is( $row->name, 'table_callback');
-
-    my @rows = $ex->select_named($sql, $condition, 'TEST');
-    is( $rows[0]->name, 'table_callback');
-    is( $rows[1]->name, 'table_callback');
-
-
-    my $itr = $ex->select_itr_named($sql, $condition, 'TEST');
-    my $next_row = $itr->next;
-    is( $next_row->name, 'table_callback');
-};
 
 
 
