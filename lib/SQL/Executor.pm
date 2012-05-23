@@ -302,7 +302,7 @@ sub select_row_by_sql {
     my $dbh = $self->dbh;
     my $row = $dbh->selectrow_hashref($sql, undef, @{ $binds_aref || [] } );
     my $callback = $self->callback_for($table_name);
-    if ( defined $callback ) {
+    if ( defined $callback && defined $row ) {
         return $callback->($self, $row);
     }
     return $row;
