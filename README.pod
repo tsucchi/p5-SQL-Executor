@@ -278,6 +278,20 @@ execute query and returns statement handler($sth).
 
 =cut
 
+=head2 disable_callback()
+
+disable callback temporarily, 
+
+
+=cut
+
+=head2 restore_callback()
+
+restore disabled callback.
+
+
+=cut
+
 =head1 How to use Transaction.
 
 You can use L<DBI>'s transaction (begin_work and commit).

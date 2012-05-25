@@ -204,6 +204,14 @@ Do UPDATE statement. parameter is the same as select method in [SQL::Maker](http
 
 execute query and returns statement handler($sth).
 
+## disable\_callback()
+
+disable callback temporarily, 
+
+## restore\_callback()
+
+restore disabled callback.
+
 # How to use Transaction.
 
 You can use [DBI](http://search.cpan.org/perldoc?DBI)'s transaction (begin\_work and commit).

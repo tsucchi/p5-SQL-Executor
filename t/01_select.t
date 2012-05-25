@@ -74,6 +74,24 @@ subtest 'select_with_callback', sub {
     single_row_obj_ok($next_row);
 };
 
+subtest 'enable and disable callback', sub {
+    my $ex = SQL::Executor->new($dbh, {
+        callback => sub {
+            my ($self, $row, $table_name) = @_;
+            return t::Row->new($row);
+        },
+    });
+
+    ok( defined $ex->callback );
+
+    $ex->disable_callback();
+    ok( !defined $ex->callback );
+
+    $ex->restore_callback();
+    ok( defined $ex->callback );
+    my $row = $ex->select($table_name, $condition, $option);
+    is( $row->name, 'callback', 'callback restored');
+};
 
 subtest 'select_row allow_empty_condition', sub {
     my $ex = SQL::Executor->new($dbh, { allow_empty_condition => 0 });

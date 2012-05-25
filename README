@@ -206,6 +206,12 @@ METHODS
   execute_query($sql, \@binds)
     execute query and returns statement handler($sth).
 
+  disable_callback()
+    disable callback temporarily,
+
+  restore_callback()
+    restore disabled callback.
+
 How to use Transaction.
     You can use DBI's transaction (begin_work and commit).
 

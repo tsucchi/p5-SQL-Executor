@@ -7,7 +7,8 @@ our $VERSION = '0.01';
 our @EXPORT_OK = qw(named_bind);
 
 use Class::Accessor::Lite (
-    ro => ['builder', 'dbh', 'allow_empty_condition', 'callback'],
+    ro => ['builder', 'dbh', 'allow_empty_condition', 'backup_callback'],
+    rw => ['callback'],
 );
 use SQL::Maker;
 use Carp qw();
@@ -83,6 +84,7 @@ sub new {
         dbh                   => $dbh,
         allow_empty_condition => defined $option_href->{allow_empty_condition} ? $option_href->{allow_empty_condition} : 1,
         callback              => $option_href->{callback},
+        backup_callback       => $option_href->{callback},
     };
     bless $self, $class;
 }
@@ -476,6 +478,31 @@ sub execute_query {
     $sth->execute(@{ $binds_aref || [] });
     return $sth;
 }
+
+
+=head2 disable_callback()
+
+disable callback temporarily, 
+
+=cut
+
+sub disable_callback {
+    my ($self) = @_;
+    $self->callback(undef);
+}
+
+=head2 restore_callback()
+
+restore disabled callback.
+
+=cut
+
+sub restore_callback {
+    my ($self) = @_;
+    $self->callback($self->backup_callback);
+}
+
+
 
 sub _execute_and_finish {
     my ($self, $sql, $binds_aref) = @_;
