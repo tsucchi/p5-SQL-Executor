@@ -115,7 +115,9 @@ this method returns hash ref and it is the same as return value in DBI's selectr
 
 sub select_row {
     my ($self, $table_name, $where, $option) = @_;
-    return $self->select_row_with_fields($table_name, ['*'], $where, $option);
+    my %option = %{ $option || {} };
+    $option{limit} = 1;
+    return $self->select_row_with_fields($table_name, ['*'], $where, \%option);
 }
 
 =head2 select_all($table_name, $where, $option)
@@ -368,7 +370,9 @@ this method returns hash ref and it is the same as return value in DBI's selectr
 
 sub select_row_with_fields {
     my ($self, $table_name, $fields_aref, $where, $option) = @_;
-    my ($sql, @binds) = $self->_prepare_select_statement($table_name, $fields_aref, $where, $option);
+    my %option = %{ $option || {} };
+    $option{limit} = 1;
+    my ($sql, @binds) = $self->_prepare_select_statement($table_name, $fields_aref, $where, \%option);
     return $self->select_row_by_sql($sql, \@binds, $table_name);
 }
 
