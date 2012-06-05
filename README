@@ -45,7 +45,7 @@ METHODS
 
       my $ex = SQL::Executor->new($dbh, {
           callback => sub {
-              my ($self, $row, $table_name) = @_;
+              my ($self, $row, $table_name, $select_id) = @_;
               return CallBack::Class->new($row);
           },
       });

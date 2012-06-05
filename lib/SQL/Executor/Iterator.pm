@@ -1,10 +1,11 @@
 package SQL::Executor::Iterator;
 use strict;
 use warnings;
-
+use Data::UUID;
 
 use Class::Accessor::Lite (
     ro => ['sth',  'executor', 'table_name'],
+    rw => ['ug'],
 );
 
 =head1 NAME
@@ -62,7 +63,10 @@ sub next {
     }
     my $callback = $self->executor->callback;
     if( defined $callback ) {
-        return $callback->($self->executor, $row, $self->table_name);
+        if( !defined $self->ug ) {
+            $self->ug( Data::UUID->new() );
+        }
+        return $callback->($self->executor, $row, $self->table_name, $self->ug->create_str);
     }
     return $row;
 }

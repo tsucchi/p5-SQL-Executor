@@ -13,7 +13,7 @@ use Class::Accessor::Lite (
 use SQL::Maker;
 use Carp qw();
 use SQL::Executor::Iterator;
-
+use Data::UUID;
 
 =head1 NAME
 
@@ -63,7 +63,7 @@ These callbacks are useful for making row object.
 
   my $ex = SQL::Executor->new($dbh, {
       callback => sub {
-          my ($self, $row, $table_name) = @_;
+          my ($self, $row, $table_name, $select_id) = @_;
           return CallBack::Class->new($row);
       },
   });
@@ -296,7 +296,8 @@ sub select_row_by_sql {
     my $row = $dbh->selectrow_hashref($sql, undef, @{ $binds_aref || [] } );
     my $callback = $self->callback;
     if ( defined $callback && defined $row ) {
-        return $callback->($self, $row, $table_name);
+        my $ug = Data::UUID->new();
+        return $callback->($self, $row, $table_name, $ug->create_str);
     }
     return $row;
 }
@@ -318,7 +319,9 @@ sub select_all_by_sql {
     my @rows = @{ $dbh->selectall_arrayref($sql, { Slice => {} }, @{ $binds_aref || [] }) };
     my $callback = $self->callback;
     if( defined $callback ) {
-        my @result = map{ $callback->($self, $_, $table_name) } @rows;
+        my $ug = Data::UUID->new();
+        my $select_id = $ug->create_str;
+        my @result = map{ $callback->($self, $_, $table_name, $select_id) } @rows;
         return @result;
     }
     return @rows;

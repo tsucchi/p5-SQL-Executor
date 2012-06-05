@@ -10,6 +10,7 @@ requires 'parent';
 requires 'DBI';
 requires 'Class::Accessor::Lite';
 requires 'SQL::Maker';
+requires 'Data::UUID';
 test_requires 'DBD::SQLite';
 
 tests 't/*.t';
