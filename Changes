@@ -1,4 +1,6 @@
 Revision history for Perl extension SQL::Executor
+0.02    2012/06/13
+        - add execute_query_named method
 
 0.01    2012/05/04
         - original version
