@@ -486,6 +486,22 @@ sub execute_query {
     return $sth;
 }
 
+=head2 execute_query_named($sql, $params_href)
+
+execute query with named placeholder and returns statement handler($sth).
+
+=cut
+
+sub execute_query_named {
+    my ($self, $sql, $params_href) = @_;
+    my $dbh = $self->dbh;
+    my ($new_sql, @binds) = named_bind($sql, $params_href);
+    my $sth = $dbh->prepare($new_sql);
+    $sth->execute(@binds);
+    return $sth;
+}
+
+
 
 =head2 disable_callback()
 
