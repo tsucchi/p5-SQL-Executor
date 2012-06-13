@@ -206,6 +206,10 @@ METHODS
   execute_query($sql, \@binds)
     execute query and returns statement handler($sth).
 
+  execute_query_named($sql, $params_href)
+    execute query with named placeholder and returns statement
+    handler($sth).
+
   disable_callback()
     disable callback temporarily,
 

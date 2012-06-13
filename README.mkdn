@@ -204,6 +204,10 @@ Do UPDATE statement. parameter is the same as select method in [SQL::Maker](http
 
 execute query and returns statement handler($sth).
 
+## execute\_query\_named($sql, $params\_href)
+
+execute query with named placeholder and returns statement handler($sth).
+
 ## disable\_callback()
 
 disable callback temporarily, 
