@@ -8,7 +8,7 @@ our @EXPORT_OK = qw(named_bind);
 
 use Class::Accessor::Lite (
     ro => ['builder', 'dbh', 'allow_empty_condition', 'backup_callback'],
-    rw => ['callback'],
+    rw => ['callback', 'id_generator'],
 );
 use SQL::Maker;
 use Carp qw();
@@ -296,8 +296,7 @@ sub select_row_by_sql {
     my $row = $dbh->selectrow_hashref($sql, undef, @{ $binds_aref || [] } );
     my $callback = $self->callback;
     if ( defined $callback && defined $row ) {
-        my $ug = Data::UUID->new();
-        return $callback->($self, $row, $table_name, $ug->create_str);
+        return $callback->($self, $row, $table_name, $self->_select_id);
     }
     return $row;
 }
@@ -319,8 +318,7 @@ sub select_all_by_sql {
     my @rows = @{ $dbh->selectall_arrayref($sql, { Slice => {} }, @{ $binds_aref || [] }) };
     my $callback = $self->callback;
     if( defined $callback ) {
-        my $ug = Data::UUID->new();
-        my $select_id = $ug->create_str;
+        my $select_id = $self->_select_id;
         my @result = map{ $callback->($self, $_, $table_name, $select_id) } @rows;
         return @result;
     }
@@ -540,6 +538,15 @@ sub _is_empty_where {
            || ( ref $where eq 'HASH'  && !%{ $where } )
            || ( eval{ $where->can('as_sql') } && $where->as_sql eq '' ) #SQL::Maker::Condition
     ;
+}
+
+# generate select_id
+sub _select_id {
+    my ($self) = @_;
+    if( !defined $self->id_generator ) {
+        $self->id_generator( Data::UUID->new() );
+    }
+    return $self->id_generator->create_str;
 }
 
 1;
