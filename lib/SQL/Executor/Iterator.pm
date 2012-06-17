@@ -1,11 +1,9 @@
 package SQL::Executor::Iterator;
 use strict;
 use warnings;
-use Data::UUID;
 
 use Class::Accessor::Lite (
-    ro => ['sth',  'executor', 'table_name'],
-    rw => ['ug'],
+    ro => ['sth',  'executor', 'table_name', 'select_id'],
 );
 
 =head1 NAME
@@ -26,21 +24,23 @@ SQL::Executor::Iterator - iterator for SQL::Executor
 
 =cut
 
-=head2 new($sth, $table_name, $executor)
+=head2 new($sth, $table_name, $executor, $select_id)
 
 $sth: L<DBI>'s statement handler
 $table_name: table name
 $executor: SQL::Executor object
+$select_id: select_id(UUID) this is used for to make Row object uniquely
 
 =cut
 
 sub new {
-    my ($class, $sth, $table_name, $executor) = @_;
+    my ($class, $sth, $table_name, $executor, $select_id) = @_;
 
     my $self = {
         sth        => $sth,
         table_name => $table_name,
         executor   => $executor,
+        select_id  => $select_id,
     };
     bless $self, $class;
 }
@@ -63,10 +63,7 @@ sub next {
     }
     my $callback = $self->executor->callback;
     if( defined $callback ) {
-        if( !defined $self->ug ) {
-            $self->ug( Data::UUID->new() );
-        }
-        return $callback->($self->executor, $row, $self->table_name, $self->ug->create_str);
+        return $callback->($self->executor, $row, $self->table_name, $self->select_id);
     }
     return $row;
 }

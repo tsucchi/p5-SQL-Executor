@@ -342,7 +342,8 @@ sub select_itr_by_sql {
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
     $sth->execute(@{ $binds_aref || [] });
-    return SQL::Executor::Iterator->new($sth, $table_name, $self);
+    my $select_id = defined $self->callback ? $self->_select_id : undef; #select_id does not need if callback is disabled.
+    return SQL::Executor::Iterator->new($sth, $table_name, $self, $select_id);
 }
 
 
