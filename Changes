@@ -1,6 +1,7 @@
 Revision history for Perl extension SQL::Executor
 0.10    2012/06/21
-        - first version in CPAN, nothing is changed from version 0.03 except version.
+        - first version in CPAN. 
+          Nothing is changed from version 0.03 except version and license in Makefile.PL.
 
 0.03    2012/06/17
         - fix: insuffcient select_id is generated in iterator
