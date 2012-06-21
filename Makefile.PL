@@ -1,5 +1,6 @@
 use inc::Module::Install;
 name 'SQL-Executor';
+license  'perl';
 all_from 'lib/SQL/Executor.pm';
 readme_from 'lib/SQL/Executor.pm';
 readme_markdown_from 'lib/SQL/Executor.pm';
