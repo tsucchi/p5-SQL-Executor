@@ -1,5 +1,5 @@
 Revision history for Perl extension SQL::Executor
-0.10    2012/06/21
+0.10    2012/06/24
         - first version in CPAN. 
           Nothing is changed from version 0.03 except version and license in Makefile.PL.
 
