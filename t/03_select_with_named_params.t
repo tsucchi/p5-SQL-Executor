@@ -20,6 +20,23 @@ subtest 'named_bind', sub {
     is_deeply(\@binds, ['aaa']);
 };
 
+subtest 'named_bind with empty value', sub {
+    my $sql = "SELECT * FROM TEST WHERE value = :value AND value2 = :value2";
+    my ($new_sql, @binds) = named_bind($sql, $condition);
+    is( $new_sql, "SELECT * FROM TEST WHERE value = ? AND value2 = ?" );
+    is_deeply(\@binds, ['aaa', undef]);
+};
+
+subtest 'named_bind with empty value and check if empty bind specified', sub {
+    my $sql = "SELECT * FROM TEST WHERE value = :value AND value2 = :value2";
+    eval {
+        named_bind($sql, $condition, 1);#checked
+        fail('exception expected');
+    };
+    like( $@, qr/^'value2' does not exist in bind hash/);
+};
+
+
 subtest 'select_row_named', sub {
     my $ex = SQL::Executor->new($dbh);
     my $row = $ex->select_row_named($sql, $condition);

@@ -227,7 +227,7 @@ sub select_itr_named {
 }
 
 
-=head2 named_bind($sql, $params_href)
+=head2 named_bind($sql, $params_href, $check_empty_bind)
 
 returns sql which is executable in execute_query() and parameters for bind.
 
@@ -235,17 +235,26 @@ returns sql which is executable in execute_query() and parameters for bind.
   # $sql   =>  "SELECT * FROM SOME_TABLE WHERE id = ?"
   # @binds => (123)
 
+parameter $check_empty_bind is optional. By default (or set $check_empty_bind=0), 
+named_bind() accepts unbound parameter like this,
+
+  my ($sql, @binds) = named_bind("SELECT * FROM SOME_TABLE WHERE id = :id", { });# do not bind :id
+  # $sql   =>  "SELECT * FROM SOME_TABLE WHERE id = ?"
+  # @binds => (undef)
+
+if $check_empty_bind is 1, named_bind() dies when unbound parameter is specified.
+
 =cut
 
 # this code is taken from Teng's search_named()
 sub named_bind {
-    my ($sql, $params_href) = @_;
+    my ($sql, $params_href, $check_empty_bind) = @_;
 
     my %named_bind = %{ $params_href };
     my @binds;
     my $new_sql = $sql;
     $new_sql =~ s{:([A-Za-z_][A-Za-z0-9_]*)}{
-        Carp::croak("'$1' does not exist in bind hash") if !exists $named_bind{$1};
+        Carp::croak("'$1' does not exist in bind hash") if ( !exists $named_bind{$1} && !!$check_empty_bind );
         if ( ref $named_bind{$1} && ref $named_bind{$1} eq "ARRAY" ) {
             push @binds, @{ $named_bind{$1} };
             my $tmp = join ',', map { '?' } @{ $named_bind{$1} };
