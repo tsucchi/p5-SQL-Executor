@@ -37,6 +37,7 @@ available option is as follows
 
 allow\_empty\_condition (BOOL default 1): allow empty condition(where) in select/delete/update
 callback (coderef): specify callback coderef. callback is called for each select\* method
+check\_empty\_bind (BOOL default 0): if TRUE(1), select\*\_named() do not accept unbound parameter, see named\_bind() for detail.
 
 These callbacks are useful for making row object.
 
@@ -119,13 +120,22 @@ select and returns iterator. You can use named placeholder in SQL like this,
 
 $table\_name is used for callback.
 
-## named\_bind($sql, $params\_href)
+## named\_bind($sql, $params\_href, $check\_empty\_bind)
 
 returns sql which is executable in execute\_query() and parameters for bind.
 
     my ($sql, @binds) = named_bind("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 123 });
     # $sql   =>  "SELECT * FROM SOME_TABLE WHERE id = ?"
     # @binds => (123)
+
+parameter $check\_empty\_bind is optional. By default (or set $check\_empty\_bind=0), 
+named\_bind() accepts unbound parameter like this,
+
+    my ($sql, @binds) = named_bind("SELECT * FROM SOME_TABLE WHERE id = :id", { });# do not bind :id
+    # $sql   =>  "SELECT * FROM SOME_TABLE WHERE id = ?"
+    # @binds => (undef)
+
+if $check\_empty\_bind is 1, named\_bind() dies when unbound parameter is specified.
 
 ## select\_by\_sql($sql, \\@binds, $table\_name)
 

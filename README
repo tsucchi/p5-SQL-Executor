@@ -39,7 +39,9 @@ METHODS
 
     allow_empty_condition (BOOL default 1): allow empty condition(where) in
     select/delete/update callback (coderef): specify callback coderef.
-    callback is called for each select* method
+    callback is called for each select* method check_empty_bind (BOOL
+    default 0): if TRUE(1), select*_named() do not accept unbound parameter,
+    see named_bind() for detail.
 
     These callbacks are useful for making row object.
 
@@ -123,13 +125,23 @@ METHODS
 
     $table_name is used for callback.
 
-  named_bind($sql, $params_href)
+  named_bind($sql, $params_href, $check_empty_bind)
     returns sql which is executable in execute_query() and parameters for
     bind.
 
       my ($sql, @binds) = named_bind("SELECT * FROM SOME_TABLE WHERE id = :id", { id => 123 });
       # $sql   =>  "SELECT * FROM SOME_TABLE WHERE id = ?"
       # @binds => (123)
+
+    parameter $check_empty_bind is optional. By default (or set
+    $check_empty_bind=0), named_bind() accepts unbound parameter like this,
+
+      my ($sql, @binds) = named_bind("SELECT * FROM SOME_TABLE WHERE id = :id", { });# do not bind :id
+      # $sql   =>  "SELECT * FROM SOME_TABLE WHERE id = ?"
+      # @binds => (undef)
+
+    if $check_empty_bind is 1, named_bind() dies when unbound parameter is
+    specified.
 
   select_by_sql($sql, \@binds, $table_name)
     select row(s). In array context, this method behaves the same as
