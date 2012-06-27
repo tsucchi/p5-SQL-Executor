@@ -7,7 +7,7 @@ our $VERSION = '0.11';
 our @EXPORT_OK = qw(named_bind);
 
 use Class::Accessor::Lite (
-    ro => ['builder', 'dbh', 'allow_empty_condition', 'backup_callback'],
+    ro => ['builder', 'dbh', 'allow_empty_condition', 'backup_callback', 'check_empty_bind'],
     rw => ['callback', 'id_generator'],
 );
 use SQL::Maker;
@@ -58,6 +58,7 @@ available option is as follows
 
 allow_empty_condition (BOOL default 1): allow empty condition(where) in select/delete/update
 callback (coderef): specify callback coderef. callback is called for each select* method
+check_empty_bind (BOOL default 0): if TRUE(1), select*_named() do not accept unbound parameter, see named_bind() for detail.
 
 These callbacks are useful for making row object.
 
@@ -83,6 +84,7 @@ sub new {
         builder               => $builder,
         dbh                   => $dbh,
         allow_empty_condition => defined $option_href->{allow_empty_condition} ? $option_href->{allow_empty_condition} : 1,
+        check_empty_bind      => !!$option_href->{check_empty_bind},
         callback              => $option_href->{callback},
         backup_callback       => $option_href->{callback},
     };
@@ -187,7 +189,7 @@ $table_name is used for callback.
 
 sub select_row_named {
     my ($self, $sql, $params_href, $table_name) = @_;
-    my ($new_sql, @binds) = named_bind($sql, $params_href);
+    my ($new_sql, @binds) = named_bind($sql, $params_href, $self->check_empty_bind);
     return $self->select_row_by_sql($new_sql, \@binds, $table_name);
 }
 
@@ -205,7 +207,7 @@ $table_name is used for callback.
 
 sub select_all_named {
     my ($self, $sql, $params_href, $table_name) = @_;
-    my ($new_sql, @binds) = named_bind($sql, $params_href);
+    my ($new_sql, @binds) = named_bind($sql, $params_href, $self->check_empty_bind);
     return $self->select_all_by_sql($new_sql, \@binds, $table_name);
 }
 
@@ -222,7 +224,7 @@ $table_name is used for callback.
 
 sub select_itr_named {
     my ($self, $sql, $params_href, $table_name) = @_;
-    my ($new_sql, @binds) = named_bind($sql, $params_href);
+    my ($new_sql, @binds) = named_bind($sql, $params_href, $self->check_empty_bind);
     return $self->select_itr_by_sql($new_sql, \@binds, $table_name);
 }
 
@@ -503,7 +505,7 @@ execute query with named placeholder and returns statement handler($sth).
 sub execute_query_named {
     my ($self, $sql, $params_href) = @_;
     my $dbh = $self->dbh;
-    my ($new_sql, @binds) = named_bind($sql, $params_href);
+    my ($new_sql, @binds) = named_bind($sql, $params_href, $self->check_empty_bind);
     my $sth = $dbh->prepare($new_sql);
     $sth->execute(@binds);
     return $sth;
