@@ -1,5 +1,10 @@
 Revision history for Perl extension SQL::Executor
-0.11
+0.11    2012/06/28
+        - behavior for select_*named() is changed.
+          In previous release, select_named(), select_row_named(), select_all_named() doesn't accept
+          empty bind by default. this behavior is changed, empty bind is not checked by default. 
+          If you want check empty bind like previous release, set check_empty_bind=1 in constructor.
+          please see new() and named_bind() in POD.
 
 0.10    2012/06/24
         - first version in CPAN. 
