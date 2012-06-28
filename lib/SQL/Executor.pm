@@ -8,12 +8,11 @@ our @EXPORT_OK = qw(named_bind);
 
 use Class::Accessor::Lite (
     ro => ['builder', 'dbh', 'allow_empty_condition', 'backup_callback', 'check_empty_bind'],
-    rw => ['callback', 'id_generator'],
+    rw => ['callback'],
 );
 use SQL::Maker;
 use Carp qw();
 use SQL::Executor::Iterator;
-use Data::UUID;
 
 =head1 NAME
 
@@ -307,7 +306,7 @@ sub select_row_by_sql {
     my $row = $dbh->selectrow_hashref($sql, undef, @{ $binds_aref || [] } );
     my $callback = $self->callback;
     if ( defined $callback && defined $row ) {
-        return $callback->($self, $row, $table_name, $self->_select_id);
+        return $callback->($self, $row, $table_name, $self->select_id);
     }
     return $row;
 }
@@ -329,7 +328,7 @@ sub select_all_by_sql {
     my @rows = @{ $dbh->selectall_arrayref($sql, { Slice => {} }, @{ $binds_aref || [] }) };
     my $callback = $self->callback;
     if( defined $callback ) {
-        my $select_id = $self->_select_id;
+        my $select_id = $self->select_id;
         my @result = map{ $callback->($self, $_, $table_name, $select_id) } @rows;
         return @result;
     }
@@ -353,7 +352,7 @@ sub select_itr_by_sql {
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
     $sth->execute(@{ $binds_aref || [] });
-    my $select_id = defined $self->callback ? $self->_select_id : undef; #select_id does not need if callback is disabled.
+    my $select_id = defined $self->callback ? $self->select_id : undef; #select_id does not need if callback is disabled.
     return SQL::Executor::Iterator->new($sth, $table_name, $self, $select_id);
 }
 
@@ -552,13 +551,16 @@ sub _is_empty_where {
     ;
 }
 
-# generate select_id
-sub _select_id {
+=head2 select_id()
+
+generate id for select statament. but by default, id is not generated.
+If you want to generate id, please override
+
+=cut
+
+sub select_id {
     my ($self) = @_;
-    if( !defined $self->id_generator ) {
-        $self->id_generator( Data::UUID->new() );
-    }
-    return $self->id_generator->create_str;
+    return;
 }
 
 1;
