@@ -35,9 +35,9 @@ $option\_href: option
 
 available option is as follows
 
-allow\_empty\_condition (BOOL default 1): allow empty condition(where) in select/delete/update
-callback (coderef): specify callback coderef. callback is called for each select\* method
-check\_empty\_bind (BOOL default 0): if TRUE(1), select\*\_named() do not accept unbound parameter, see named\_bind() for detail.
+- allow\_empty\_condition (BOOL default 1): allow empty condition(where) in select/delete/update
+- callback (coderef): specify callback coderef. callback is called for each select\* method
+- check\_empty\_bind (BOOL default 0): if TRUE(1), select\*\_named() do not accept unbound parameter, see named\_bind() for detail.
 
 These callbacks are useful for making row object.
 
