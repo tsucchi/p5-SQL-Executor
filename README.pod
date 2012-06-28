@@ -309,6 +309,14 @@ restore disabled callback.
 
 =cut
 
+=head2 select_id()
+
+generate id for select statament. but by default, id is not generated.
+If you want to generate id, please override
+
+
+=cut
+
 =head1 How to use Transaction.
 
 You can use L<DBI>'s transaction (begin_work and commit).
