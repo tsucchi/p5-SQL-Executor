@@ -228,6 +228,10 @@ METHODS
   restore_callback()
     restore disabled callback.
 
+  select_id()
+    generate id for select statament. but by default, id is not generated.
+    If you want to generate id, please override
+
 How to use Transaction.
     You can use DBI's transaction (begin_work and commit).
 
