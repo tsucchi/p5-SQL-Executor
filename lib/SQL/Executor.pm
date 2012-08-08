@@ -2,7 +2,7 @@ package SQL::Executor;
 use parent qw(Exporter);
 use strict;
 use warnings;
-our $VERSION = '0.11';
+our $VERSION = '0.12_01';
 
 our @EXPORT_OK = qw(named_bind);
 
