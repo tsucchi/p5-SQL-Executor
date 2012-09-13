@@ -331,7 +331,7 @@ sub _select_row_by_sql {
 
 sub _handle_exception {
     my ($self, $sql, $binds_aref, $err) = @_;
-    my $binds_text = join(',', @{ $binds_aref || [] });
+    my $binds_text = join(',', map{ defined $_ ? $_ : 'NULL' } @{ $binds_aref || [] });
     my $message = "Error sql: $sql, binds: [$binds_text]\n$_";
     Carp::croak($message);
 }
