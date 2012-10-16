@@ -315,6 +315,14 @@ restore disabled callback.
 
 =cut
 
+=head2 last_insert_id(@args)
+
+If driver is mysql, return $dbh->{mysql_insertid}.If driver is SQLite, return $dbh->sqlite_last_insert_rowid.
+If other driver is used, return $dbh->last_insert_id(@args)
+
+
+=cut
+
 =head2 select_id()
 
 generate id for select statament. but by default, id is not generated.

@@ -17,6 +17,18 @@ subtest 'insert', sub {
     is( $row->{value}, 'xxx');
 };
 
+subtest 'insert and last_insert_id', sub {
+    my $ex = SQL::Executor->new($dbh);
+    $ex->insert('TEST', { value => 'yyy' });
+    my $id = $ex->last_insert_id;
+    my @rows = $ex->select('TEST');
+    my $row = $ex->select('TEST', { id => $id });
+    ok( defined $row );
+    is( $row->{id},    $id);
+    is( $row->{value}, 'yyy');
+};
+
+
 done_testing;
 
 
