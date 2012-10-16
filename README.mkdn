@@ -226,6 +226,11 @@ disable callback temporarily,
 
 restore disabled callback.
 
+## last\_insert\_id(@args)
+
+If driver is mysql, return $dbh->{mysql\_insertid}.If driver is SQLite, return $dbh->sqlite\_last\_insert\_rowid.
+If other driver is used, return $dbh->last\_insert\_id(@args)
+
 ## select\_id()
 
 generate id for select statament. but by default, id is not generated.
