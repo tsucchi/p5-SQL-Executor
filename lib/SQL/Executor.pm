@@ -14,6 +14,7 @@ use SQL::Maker;
 use Carp qw();
 use SQL::Executor::Iterator;
 
+
 =head1 NAME
 
 SQL::Executor - Thin DBI wrapper using SQL::Maker
@@ -540,6 +541,24 @@ sub restore_callback {
     $self->callback($self->backup_callback);
 }
 
+=head2 last_insert_id(@args)
+
+If driver is mysql, return $dbh->{mysql_insertid}.If driver is SQLite, return $dbh->sqlite_last_insert_rowid.
+If other driver is used, return $dbh->last_insert_id(@args)
+
+=cut
+
+sub last_insert_id {
+    my ($self, @args) = @_;
+    if( $self->dbh->{Driver}->{Name} eq 'mysql' ) {
+        return $self->dbh->{mysql_insertid};
+    }
+    if( $self->dbh->{Driver}->{Name} eq 'SQLite' ) {
+        return $self->dbh->sqlite_last_insert_rowid;
+    }
+
+    return $self->dbh->last_insert_id(@args);
+}
 
 
 sub _execute_and_finish {

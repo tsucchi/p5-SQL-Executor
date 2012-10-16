@@ -17,7 +17,7 @@ END {
 
 sub prepare_dbh {
     my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","", { RaiseError => 1, PrintError => 0 });
-    $dbh->do('CREATE TABLE TEST ( id int, value text )');
+    $dbh->do('CREATE TABLE TEST ( id integer PRIMARY KEY, value text )');
     return $dbh;
 }
 
