@@ -5,8 +5,6 @@ use warnings;
 
 our @EXPORT = qw(prepare_dbh prepare_testdata remove_db_file);
 
-my $dbfile = "t/testdata.db";
-
 INIT {
     remove_db_file();
 }
@@ -16,7 +14,7 @@ END {
 }
 
 sub prepare_dbh {
-    my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","", { RaiseError => 1, PrintError => 0 });
+    my $dbh = DBI->connect("dbi:SQLite:dbname=:memory:","","", { RaiseError => 1, PrintError => 0 });
     $dbh->do('CREATE TABLE TEST ( id integer PRIMARY KEY, value text )');
     return $dbh;
 }
@@ -29,7 +27,7 @@ sub prepare_testdata {
 }
 
 sub remove_db_file {
-    unlink $dbfile if ( -e $dbfile );
+    #unlink $dbfile if ( -e $dbfile );
 }
 
 
