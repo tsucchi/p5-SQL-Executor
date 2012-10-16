@@ -3,15 +3,7 @@ use parent qw(Exporter);
 use strict;
 use warnings;
 
-our @EXPORT = qw(prepare_dbh prepare_testdata remove_db_file);
-
-INIT {
-    remove_db_file();
-}
-
-END {
-    remove_db_file();
-}
+our @EXPORT = qw(prepare_dbh prepare_testdata);
 
 sub prepare_dbh {
     my $dbh = DBI->connect("dbi:SQLite:dbname=:memory:","","", { RaiseError => 1, PrintError => 0 });
@@ -24,10 +16,6 @@ sub prepare_testdata {
     $dbh->do("INSERT INTO TEST VALUES (1, 'aaa')");
     $dbh->do("INSERT INTO TEST VALUES (2, 'aaa')");
     $dbh->do("INSERT INTO TEST VALUES (3, 'bbb')");
-}
-
-sub remove_db_file {
-    #unlink $dbfile if ( -e $dbfile );
 }
 
 
