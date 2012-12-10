@@ -11,6 +11,7 @@ requires 'parent';
 requires 'DBI';
 requires 'Class::Accessor::Lite';
 requires 'SQL::Maker';
+requires 'Try::Tiny';
 test_requires 'DBD::SQLite';
 
 tests 't/*.t';

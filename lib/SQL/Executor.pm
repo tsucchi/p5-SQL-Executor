@@ -12,8 +12,8 @@ use Class::Accessor::Lite (
 );
 use SQL::Maker;
 use Carp qw();
+use Try::Tiny;
 use SQL::Executor::Iterator;
-
 
 =head1 NAME
 
@@ -309,6 +309,17 @@ this method returns hash ref and it is the same as return value in DBI's selectr
 
 sub select_row_by_sql {
     my ($self, $sql, $binds_aref, $table_name) = @_;
+    my $row = undef;
+    try {
+        $row = $self->_select_row_by_sql($sql, $binds_aref, $table_name);
+    } catch {
+        $self->_handle_exception($sql, $binds_aref, $_);
+    };
+    return $row;
+}
+
+sub _select_row_by_sql {
+    my ($self, $sql, $binds_aref, $table_name) = @_;
     my $dbh = $self->dbh;
     my $row = $dbh->selectrow_hashref($sql, undef, @{ $binds_aref || [] } );
     my $callback = $self->callback;
@@ -316,6 +327,13 @@ sub select_row_by_sql {
         return $callback->($self, $row, $table_name, $self->select_id);
     }
     return $row;
+}
+
+sub _handle_exception {
+    my ($self, $sql, $binds_aref, $err) = @_;
+    my $binds_text = join(',', map{ defined $_ ? $_ : 'NULL' } @{ $binds_aref || [] });
+    my $message = "Error sql: $sql, binds: [$binds_text]\n$_";
+    Carp::croak($message);
 }
 
 =head2 select_all_by_sql($sql, \@binds, $table_name)
@@ -331,6 +349,17 @@ this method returns array that is composed of hash refs. (hash ref is same as DB
 
 sub select_all_by_sql {
     my ($self, $sql, $binds_aref, $table_name) = @_;
+    my @result = ();
+    try {
+        @result = $self->_select_all_by_sql($sql, $binds_aref, $table_name);
+    } catch {
+        $self->_handle_exception($sql, $binds_aref, $_);
+    };
+    return @result;
+}
+
+sub _select_all_by_sql {
+    my ($self, $sql, $binds_aref, $table_name) = @_;
     my $dbh = $self->dbh;
     my @rows = @{ $dbh->selectall_arrayref($sql, { Slice => {} }, @{ $binds_aref || [] }) };
     my $callback = $self->callback;
@@ -341,7 +370,6 @@ sub select_all_by_sql {
     }
     return @rows;
 }
-
 
 =head2 select_itr_by_sql($sql, \@binds, $table_name)
 
@@ -355,6 +383,17 @@ Iterator is L<SQL::Executor::Iterator> object.
 =cut
 
 sub select_itr_by_sql {
+    my ($self, $sql, $binds_aref, $table_name) = @_;
+    my $itr = undef;
+    try {
+        $itr = $self->_select_itr_by_sql($sql, $binds_aref, $table_name);
+    } catch {
+        $self->_handle_exception($sql, $binds_aref, $_);
+    };
+    return $itr;
+}
+
+sub _select_itr_by_sql {
     my ($self, $sql, $binds_aref, $table_name) = @_;
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
@@ -496,6 +535,16 @@ execute query and returns statement handler($sth).
 
 sub execute_query {
     my ($self, $sql, $binds_aref) = @_;
+    my $sth = undef;
+    try {
+        $self->_execute_query($sql, $binds_aref);
+    } catch {
+        $self->_handle_exception($sql, $binds_aref, $_);
+    };
+}
+
+sub _execute_query {
+    my ($self, $sql, $binds_aref) = @_;
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
     $sth->execute(@{ $binds_aref || [] });
@@ -510,12 +559,18 @@ execute query with named placeholder and returns statement handler($sth).
 
 sub execute_query_named {
     my ($self, $sql, $params_href) = @_;
-    my $dbh = $self->dbh;
+    my $sth = undef;
     my ($new_sql, @binds) = named_bind($sql, $params_href, $self->check_empty_bind);
-    my $sth = $dbh->prepare($new_sql);
-    $sth->execute(@binds);
+    try {
+        my $dbh = $self->dbh;
+        $sth = $dbh->prepare($new_sql);
+        $sth->execute(@binds);
+    } catch {
+        $self->_handle_exception($new_sql, \@binds, $_);
+    };
     return $sth;
 }
+
 
 
 
