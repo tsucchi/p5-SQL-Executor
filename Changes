@@ -1,5 +1,7 @@
 Revision history for Perl extension SQL::Executor
 
+0.13    2012/12/10
+
 0.12    2012/10/16
         - new method: last_insert_id implemented. (for MySQL/SQLite user).
         - running test code is faster by using in-memory database.
