@@ -58,6 +58,17 @@ METHODS
       my $row = $ex->select_by_sql($sql1, \@binds1, 'TEST');
       # $row isa 'CallBack::Class'
 
+  connect($dsn, $user, $pass, $option_for_dbi, $option_href)
+    $dsn: DSN $user: database user $pass: database password
+    $option_href_for_dbi: options passed to DBI $option_href: option for
+    SQL::Executor (options are same as new() method)
+
+    connect database and create SQL::Executor instance. using this method,
+    SQL::Executor uses managed connection and transaction via DBIx::Handler
+
+  dbh()
+    return database handler
+
   select($table_name, $where, $option)
     select row(s). parameter is the same as select method in SQL::Maker. But
     array ref for filed names are not needed. In array context, this method
@@ -249,7 +260,17 @@ METHODS
     If you want to generate id, please override
 
 How to use Transaction.
-    You can use DBI's transaction (begin_work and commit).
+    When create instance using connect() method, you can use DBIx::Handler's
+    transaction management,
+
+      use SQL::Executor;
+      my $ex = SQL::Executor->connect($dsn, $id, $pass);
+      my $txn = $ex->handler->txn_scope();
+      $ex->insert('SOME_TABLE', { id => 124, value => 'xxxx'} );
+      $ex->insert('SOME_TABLE', { id => 125, value => 'yyy'} );
+      $txn->commit();
+
+    Or You can use DBI's transaction (begin_work and commit).
 
       use DBI;
       use SQL::Executor;
@@ -279,8 +300,6 @@ FAQ
     *   I want to use SQL::Maker.
 
     *   When I need to use complex query, I want to use named placeholder.
-
-    *   I don't want to manage transaction in this module.
 
 AUTHOR
     Takuya Tsuchida <tsucchi {at} cpan.org>

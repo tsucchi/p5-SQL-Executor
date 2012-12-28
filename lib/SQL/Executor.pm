@@ -7,13 +7,15 @@ our $VERSION = '0.14';
 our @EXPORT_OK = qw(named_bind);
 
 use Class::Accessor::Lite (
-    ro => ['builder', 'dbh', 'allow_empty_condition', 'backup_callback', 'check_empty_bind'],
+    ro => ['builder', 'handler', 'allow_empty_condition', 'backup_callback', 'check_empty_bind'],
     rw => ['callback'],
 );
 use SQL::Maker;
 use Carp qw();
 use Try::Tiny;
 use SQL::Executor::Iterator;
+use DBIx::Handler;
+
 
 =head1 NAME
 
@@ -86,15 +88,60 @@ sub new {
     my $builder = SQL::Maker->new( driver => $dbh->{Driver}->{Name} );
 
     my $self = {
-        builder               => $builder,
-        dbh                   => $dbh,
+        builder => $builder,
+        dbh     => $dbh,
+        _options($option_href),
+    };
+    bless $self, $class;
+}
+
+=head2 connect($dsn, $user, $pass, $option_for_dbi, $option_href)
+
+$dsn: DSN
+$user: database user
+$pass: database password
+$option_href_for_dbi: options passed to DBI
+$option_href: option for SQL::Executor (options are same as new() method)
+
+connect database and create SQL::Executor instance. using this method, SQL::Executor uses
+managed connection and transaction via L<DBIx::Handler>
+
+=cut
+
+sub connect {
+    my ($class, $dsn, $user, $pass, $option_href_for_dbi, $option_href) = @_;
+    my $handler = DBIx::Handler->new($dsn, $user, $pass, $option_href_for_dbi);
+    my $builder = SQL::Maker->new( driver => $handler->dbh->{Driver}->{Name} );
+
+    my $self = {
+        builder => $builder,
+        handler => $handler,
+        _options($option_href),
+    };
+    bless $self, $class;
+}
+
+sub _options {
+    my ($option_href) = @_;
+
+    return (
         allow_empty_condition => defined $option_href->{allow_empty_condition} ? $option_href->{allow_empty_condition} : 1,
         check_empty_bind      => !!$option_href->{check_empty_bind},
         callback              => $option_href->{callback},
         backup_callback       => $option_href->{callback},
-        sql_maker_load_plugin => {},
-    };
-    bless $self, $class;
+    );
+}
+
+=head2 dbh()
+
+return database handler
+
+=cut
+
+sub dbh {
+    my ($self) = @_;
+    return $self->handler->dbh if ( defined $self->handler );
+    return $self->{dbh};
 }
 
 
@@ -679,7 +726,18 @@ __END__
 
 =head1 How to use Transaction.
 
-You can use L<DBI>'s transaction (begin_work and commit).
+When create instance using connect() method, you can use L<DBIx::Handler>'s
+transaction management, 
+
+  use SQL::Executor;
+  my $ex = SQL::Executor->connect($dsn, $id, $pass);
+  my $txn = $ex->handler->txn_scope();
+  $ex->insert('SOME_TABLE', { id => 124, value => 'xxxx'} );
+  $ex->insert('SOME_TABLE', { id => 125, value => 'yyy'} );
+  $txn->commit();
+
+
+Or You can use L<DBI>'s transaction (begin_work and commit).
 
   use DBI;
   use SQL::Executor;
@@ -713,8 +771,6 @@ Or you can also use transaction management modules like L<DBIx::TransactionManag
 =item * I want to use L<SQL::Maker>.
 
 =item * When I need to use complex query, I want to use named placeholder.
-
-=item * I don't want to manage transaction in this module.
 
 =back
 

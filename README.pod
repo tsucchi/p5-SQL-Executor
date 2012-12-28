@@ -67,6 +67,27 @@ These callbacks are useful for making row object.
 
 =cut
 
+=head2 connect($dsn, $user, $pass, $option_for_dbi, $option_href)
+
+$dsn: DSN
+$user: database user
+$pass: database password
+$option_href_for_dbi: options passed to DBI
+$option_href: option for SQL::Executor (options are same as new() method)
+
+connect database and create SQL::Executor instance. using this method, SQL::Executor uses
+managed connection and transaction via L<DBIx::Handler>
+
+
+=cut
+
+=head2 dbh()
+
+return database handler
+
+
+=cut
+
 =head2 select($table_name, $where, $option)
 
 select row(s). parameter is the same as select method in L<SQL::Maker>. But array ref for filed names are not needed.
@@ -343,7 +364,18 @@ If you want to generate id, please override
 
 =head1 How to use Transaction.
 
-You can use L<DBI>'s transaction (begin_work and commit).
+When create instance using connect() method, you can use L<DBIx::Handler>'s
+transaction management, 
+
+  use SQL::Executor;
+  my $ex = SQL::Executor->connect($dsn, $id, $pass);
+  my $txn = $ex->handler->txn_scope();
+  $ex->insert('SOME_TABLE', { id => 124, value => 'xxxx'} );
+  $ex->insert('SOME_TABLE', { id => 125, value => 'yyy'} );
+  $txn->commit();
+
+
+Or You can use L<DBI>'s transaction (begin_work and commit).
 
   use DBI;
   use SQL::Executor;
@@ -377,8 +409,6 @@ Or you can also use transaction management modules like L<DBIx::TransactionManag
 =item * I want to use L<SQL::Maker>.
 
 =item * When I need to use complex query, I want to use named placeholder.
-
-=item * I don't want to manage transaction in this module.
 
 =back
 
