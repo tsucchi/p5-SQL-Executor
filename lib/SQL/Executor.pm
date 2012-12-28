@@ -84,7 +84,6 @@ These callbacks are useful for making row object.
 sub new {
     my ($class, $dbh, $option_href) = @_;
     my $builder = SQL::Maker->new( driver => $dbh->{Driver}->{Name} );
-    SQL::Maker->load_plugin('InsertMulti');
 
     my $self = {
         builder               => $builder,
@@ -93,6 +92,7 @@ sub new {
         check_empty_bind      => !!$option_href->{check_empty_bind},
         callback              => $option_href->{callback},
         backup_callback       => $option_href->{callback},
+        sql_maker_load_plugin => {},
     };
     bless $self, $class;
 }
@@ -491,6 +491,7 @@ Do INSERT-multi statement using L<SQL::Maker::Plugin::InsertMulti>.
 
 sub insert_multi {
     my ($self, $table_name, @args) = @_;
+    $self->_load_sql_maker_plugin('InsertMulti');
     my $builder = $self->builder;
     my ($sql, @binds) = $builder->insert_multi($table_name, @args);
     $self->_execute_and_finish($sql, \@binds);
@@ -642,6 +643,17 @@ sub select_id {
     my ($self) = @_;
     return;
 }
+
+# load SQL::Maker plugin
+sub _load_sql_maker_plugin {
+    my ($self, $plugin_name) = @_;
+
+    if( !defined $self->{sql_maker_load_plugin}->{$plugin_name} ) {
+        SQL::Maker->load_plugin($plugin_name);
+        $self->{sql_maker_load_plugin}->{$plugin_name} = 1;
+    }
+}
+
 
 1;
 __END__
