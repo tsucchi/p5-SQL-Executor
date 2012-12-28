@@ -202,6 +202,13 @@ Do INSERT statement. parameter is the same as select method in [SQL::Maker](http
 
 Do INSERT-multi statement using [SQL::Maker::Plugin::InsertMulti](http://search.cpan.org/perldoc?SQL::Maker::Plugin::InsertMulti).
 
+## insert\_on\_duplicate($table\_name, $insert\_value\_href, $update\_value\_href)
+
+Do "INSERT ... ON DUPLICATE KEY UPDATE" query (works only MySQL) using [SQL::Maker::Plugin::InsertOnDuplicate](http://search.cpan.org/perldoc?SQL::Maker::Plugin::InsertOnDuplicate).
+
+this method is available when [SQL::Maker](http://search.cpan.org/perldoc?SQL::Maker) >= 1.09 is installed. If older version is installed, you will
+got error like "Can't locate SQL/Maker/Plugin/InsertOnDuplicate.pm in @INC ..."
+
 ## delete($table\_name, $where)
 
 Do DELETE statement. parameter is the same as select method in [SQL::Maker](http://search.cpan.org/perldoc?SQL::Maker).

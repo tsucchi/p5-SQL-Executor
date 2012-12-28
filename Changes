@@ -1,5 +1,6 @@
 Revision history for Perl extension SQL::Executor
-0.14
+0.14    2012/12/28
+        - new method: insert_on_duplicate (for MySQL and needs SQL::Maker >= 1.09)
 
 0.13    2012/12/10
         - improve error message when SQL execution is failed.

@@ -497,6 +497,24 @@ sub insert_multi {
     $self->_execute_and_finish($sql, \@binds);
 }
 
+=head2 insert_on_duplicate($table_name, $insert_value_href, $update_value_href)
+
+Do "INSERT ... ON DUPLICATE KEY UPDATE" query (works only MySQL) using L<SQL::Maker::Plugin::InsertOnDuplicate>.
+
+this method is available when L<SQL::Maker> >= 1.09 is installed. If older version is installed, you will
+got error like "Can't locate SQL/Maker/Plugin/InsertOnDuplicate.pm in @INC ..."
+
+=cut
+
+sub insert_on_duplicate {
+    my ($self, $table_name, $insert_value_href, $update_value_href) = @_;
+    $self->_load_sql_maker_plugin('InsertOnDuplicate');
+    my $builder = $self->builder;
+    my ($sql, @binds) = $builder->insert_on_duplicate($table_name, $insert_value_href, $update_value_href);
+    $self->_execute_and_finish($sql, \@binds);
+}
+
+
 
 =head2 delete($table_name, $where)
 

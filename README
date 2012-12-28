@@ -210,6 +210,14 @@ METHODS
   insert_multi($table_name, @args)
     Do INSERT-multi statement using SQL::Maker::Plugin::InsertMulti.
 
+  insert_on_duplicate($table_name, $insert_value_href, $update_value_href)
+    Do "INSERT ... ON DUPLICATE KEY UPDATE" query (works only MySQL) using
+    SQL::Maker::Plugin::InsertOnDuplicate.
+
+    this method is available when SQL::Maker >= 1.09 is installed. If older
+    version is installed, you will got error like "Can't locate
+    SQL/Maker/Plugin/InsertOnDuplicate.pm in @INC ..."
+
   delete($table_name, $where)
     Do DELETE statement. parameter is the same as select method in
     SQL::Maker.
