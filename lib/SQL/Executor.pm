@@ -360,7 +360,7 @@ sub select_row_by_sql {
     try {
         $row = $self->_select_row_by_sql($sql, $binds_aref, $table_name);
     } catch {
-        $self->_handle_exception($sql, $binds_aref, $_);
+        $self->handle_exception($sql, $binds_aref, $_);
     };
     return $row;
 }
@@ -374,13 +374,6 @@ sub _select_row_by_sql {
         return $callback->($self, $row, $table_name, $self->select_id);
     }
     return $row;
-}
-
-sub _handle_exception {
-    my ($self, $sql, $binds_aref, $err) = @_;
-    my $binds_text = join(',', map{ defined $_ ? $_ : 'NULL' } @{ $binds_aref || [] });
-    my $message = "Error sql: $sql, binds: [$binds_text]\n$_";
-    Carp::croak($message);
 }
 
 =head2 select_all_by_sql($sql, \@binds, $table_name)
@@ -400,7 +393,7 @@ sub select_all_by_sql {
     try {
         @result = $self->_select_all_by_sql($sql, $binds_aref, $table_name);
     } catch {
-        $self->_handle_exception($sql, $binds_aref, $_);
+        $self->handle_exception($sql, $binds_aref, $_);
     };
     return @result;
 }
@@ -435,7 +428,7 @@ sub select_itr_by_sql {
     try {
         $itr = $self->_select_itr_by_sql($sql, $binds_aref, $table_name);
     } catch {
-        $self->_handle_exception($sql, $binds_aref, $_);
+        $self->handle_exception($sql, $binds_aref, $_);
     };
     return $itr;
 }
@@ -605,7 +598,7 @@ sub execute_query {
     try {
         $self->_execute_query($sql, $binds_aref);
     } catch {
-        $self->_handle_exception($sql, $binds_aref, $_);
+        $self->handle_exception($sql, $binds_aref, $_);
     };
 }
 
@@ -632,7 +625,7 @@ sub execute_query_named {
         $sth = $dbh->prepare($new_sql);
         $sth->execute(@binds);
     } catch {
-        $self->_handle_exception($new_sql, \@binds, $_);
+        $self->handle_exception($new_sql, \@binds, $_);
     };
     return $sth;
 }
@@ -695,6 +688,25 @@ sub _is_empty_where {
            || ( ref $where eq 'HASH'  && !%{ $where } )
            || ( eval{ $where->can('as_sql') } && $where->as_sql eq '' ) #SQL::Maker::Condition
     ;
+}
+
+
+=head2 handle_exception($sql, $binds_aref, $err_message)
+
+show error message. you can override this method in subclass to provide
+customized error message.
+
+default error message is like this,
+
+Error <I>$error_message</I> sql: <I>$sql</I>, binds: [<I>$binds_aref</I>]\n
+
+=cut
+
+sub handle_exception {
+    my ($self, $sql, $binds_aref, $err) = @_;
+    my $binds_text = join(',', map{ defined $_ ? $_ : 'NULL' } @{ $binds_aref || [] });
+    my $message = "Error $_ sql: $sql, binds: [$binds_text]\n";
+    Carp::croak($message);
 }
 
 =head2 select_id()
