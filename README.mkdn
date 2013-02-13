@@ -253,6 +253,15 @@ restore disabled callback.
 If driver is mysql, return $dbh->{mysql\_insertid}.If driver is SQLite, return $dbh->sqlite\_last\_insert\_rowid.
 If other driver is used, return $dbh->last\_insert\_id(@args)
 
+## handle\_exception($sql, $binds\_aref, $err\_message)
+
+show error message. you can override this method in subclass to provide
+customized error message.
+
+default error message is like this,
+
+Error <I>$error\_message</I> sql: <I>$sql</I>, binds: \[<I>$binds\_aref</I>\]\\n
+
 ## select\_id()
 
 generate id for select statament. but by default, id is not generated.

@@ -354,6 +354,18 @@ If other driver is used, return $dbh->last_insert_id(@args)
 
 =cut
 
+=head2 handle_exception($sql, $binds_aref, $err_message)
+
+show error message. you can override this method in subclass to provide
+customized error message.
+
+default error message is like this,
+
+Error <I>$error_message</I> sql: <I>$sql</I>, binds: [<I>$binds_aref</I>]\n
+
+
+=cut
+
 =head2 select_id()
 
 generate id for select statament. but by default, id is not generated.
