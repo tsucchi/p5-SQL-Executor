@@ -1,4 +1,6 @@
 Revision history for Perl extension SQL::Executor
+0.16
+
 0.15    2013/01/07
         - specify sufficient DBD::SQLite, DBI version in Makefile.PL(avoid to fail in CPAN tester)
 
