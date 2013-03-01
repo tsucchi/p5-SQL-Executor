@@ -16,6 +16,7 @@ use Try::Tiny;
 use SQL::Executor::Iterator;
 use DBIx::Handler;
 
+$Carp::Internal{(__PACKAGE__)} = 1;
 
 =head1 NAME
 
@@ -357,6 +358,7 @@ this method returns hash ref and it is the same as return value in DBI's selectr
 sub select_row_by_sql {
     my ($self, $sql, $binds_aref, $table_name) = @_;
     my $row = undef;
+
     try {
         $row = $self->_select_row_by_sql($sql, $binds_aref, $table_name);
     } catch {
