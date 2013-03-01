@@ -1,5 +1,7 @@
 Revision history for Perl extension SQL::Executor
-0.17
+
+0.17    2013/03/01
+        - show caller line no at select*/update/insert when error is occured.
 
 0.16    2013/02/13
         - new method: handle_error()
