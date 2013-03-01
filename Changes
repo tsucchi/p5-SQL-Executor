@@ -1,4 +1,6 @@
 Revision history for Perl extension SQL::Executor
+0.17
+
 0.16    2013/02/13
         - new method: handle_error()
           You can override this method in your subclass to customize error message.
