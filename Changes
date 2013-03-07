@@ -2,6 +2,7 @@ Revision history for Perl extension SQL::Executor
 
 0.17    2013/03/01
         - show caller's line number at select*/update/insert when error is occured.
+        - accept undef in named_bind 2nd argument($params_hashref)
 
 0.16    2013/02/13
         - new method: handle_error()
