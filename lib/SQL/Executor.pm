@@ -306,7 +306,7 @@ if $check_empty_bind is 1, named_bind() dies when unbound parameter is specified
 sub named_bind {
     my ($sql, $params_href, $check_empty_bind) = @_;
 
-    my %named_bind = %{ $params_href };
+    my %named_bind = %{ $params_href || {} };
     my @binds;
     my $new_sql = $sql;
     $new_sql =~ s{:([A-Za-z_][A-Za-z0-9_]*)}{

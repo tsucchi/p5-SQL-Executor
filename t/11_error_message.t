@@ -41,7 +41,7 @@ subtest 'execute_query', sub {
 subtest 'execute_query_named', sub {
     my $db = SQL::Executor->new($dbh);
     run_and_check_exception(sub { 
-        $db->execute_query_named("INSERT INTO TEST (id) VALUES( no_exist_fun() )", {});
+        $db->execute_query_named("INSERT INTO TEST (id) VALUES( no_exist_fun() )");
     });
 };
 
