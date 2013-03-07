@@ -706,7 +706,7 @@ Error <I>$error_message</I> sql: <I>$sql</I>, binds: [<I>$binds_aref</I>]\n
 
 sub handle_exception {
     my ($self, $sql, $binds_aref, $err) = @_;
-    my $binds_text = join(',', map{ defined $_ ? $_ : 'NULL' } @{ $binds_aref || [] });
+    my $binds_text = join(',', map{ defined $_ ? "'$_'" : 'NULL' } @{ $binds_aref || [] });
     my $message = "Error $_ sql: $sql, binds: [$binds_text]\n";
     Carp::croak($message);
 }
